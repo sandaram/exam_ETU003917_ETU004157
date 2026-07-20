@@ -33,7 +33,7 @@ $routes->group('client', ['namespace' => 'App\Controllers\Client'], static funct
     $routes->get('historique', 'TransactionController::historique');
 });
 
-$routes->group('operateur/prefixes', ['filter' => 'auth'], function ($routes) {
+$routes->group('operateur/prefixes', function ($routes) {
     $routes->get('/', 'Prefixe::index');
     $routes->post('create', 'Prefixe::create');
     $routes->post('update/(:num)', 'Prefixe::update/$1');
@@ -41,7 +41,7 @@ $routes->group('operateur/prefixes', ['filter' => 'auth'], function ($routes) {
     $routes->get('delete/(:num)', 'Prefixe::delete/$1');
 });
 
-$routes->group('operateur/baremes', ['filter' => 'auth'], function ($routes) {
+$routes->group('operateur/baremes', function ($routes) {
     $routes->get('/', 'BaremeFrais::index');
     $routes->get('create', 'BaremeFrais::createForm');
     $routes->post('create', 'BaremeFrais::create');
@@ -50,7 +50,24 @@ $routes->group('operateur/baremes', ['filter' => 'auth'], function ($routes) {
     $routes->get('delete/(:num)', 'BaremeFrais::delete/$1');
 });
 
-$routes->group('operateur/rapports', ['filter' => 'auth'], function ($routes) {
+$routes->group('operateur/rapports', function ($routes) {
     $routes->get('gains', 'Rapport::gains');
     $routes->get('comptes', 'Rapport::comptesClients');
+});
+
+$routes->group('admin/prefixes', function ($routes) {
+    $routes->get('/', 'Prefixe::index');
+    $routes->post('add', 'Prefixe::create');
+    $routes->get('delete/(:num)', 'Prefixe::delete/$1');
+    $routes->get('toggle/(:num)', 'Prefixe::toggle/$1');
+});
+
+$routes->group('admin/baremes', function ($routes) {
+    $routes->get('/', 'BaremeFrais::index');
+    $routes->post('update/(:num)', 'BaremeFrais::update/$1');
+});
+
+$routes->group('admin/rapports', function ($routes) {
+    $routes->get('gains', 'Rapport::gains');
+    $routes->get('clients', 'Rapport::comptesClients');
 });

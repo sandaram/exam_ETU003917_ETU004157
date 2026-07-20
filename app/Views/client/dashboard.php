@@ -125,6 +125,12 @@
 <body>
 
 <div class="container">
+    <?php if (session()->getFlashdata('success')): ?>
+        <div style="background:#d1fae5;color:#065f46;padding:12px;border-radius:8px;margin-bottom:16px;">
+            <?= esc(session()->getFlashdata('success')) ?>
+        </div>
+    <?php endif; ?>
+
     <!-- En-tête -->
     <div class="header">
         <div>
