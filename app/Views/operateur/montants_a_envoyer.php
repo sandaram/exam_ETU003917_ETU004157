@@ -24,7 +24,6 @@
                 <thead>
                     <tr>
                         <th>Operateur</th>
-                        <th>Cas de figure</th>
                         <th class="text-end">Operations</th>
                         <th class="text-end">Argent</th>
                         <th class="text-end">Frais</th>
@@ -33,16 +32,23 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <?php
+                        $totalOperations = 0;
+                        $totalMontantGeneral = 0;
+                        $totalFraisGeneral = 0;
+                        $totalCommissionGeneral = 0;
+                        $totalAEnvoyerGeneral = 0;
+                    ?>
                     <?php foreach ($lignes as $ligne): ?>
                         <?php
-                            $scenario = match ($ligne['mode_transfert']) {
-                                'interne', 'externe_direct' => 'Même operateur',
-                                default => 'Autre operateur',
-                            };
+                            $totalOperations        += (int) $ligne['nombre_operations'];
+                            $totalMontantGeneral     += (float) $ligne['total_montant'];
+                            $totalFraisGeneral       += (float) $ligne['total_frais'];
+                            $totalCommissionGeneral  += (float) $ligne['total_commission'];
+                            $totalAEnvoyerGeneral    += (float) $ligne['total_a_envoyer'];
                         ?>
                         <tr>
                             <td><?= esc($ligne['operateur']) ?></td>
-                            <td><?= esc($scenario) ?></td>
                             <td class="text-end"><?= esc($ligne['nombre_operations']) ?></td>
                             <td class="text-end"><?= number_format((float) $ligne['total_montant'], 0, ',', ' ') ?> Ar</td>
                             <td class="text-end"><?= number_format((float) $ligne['total_frais'], 0, ',', ' ') ?> Ar</td>
@@ -52,7 +58,16 @@
                     <?php endforeach; ?>
                     <?php if (empty($lignes)): ?>
                         <tr>
-                            <td colspan="7" class="text-center text-muted">Aucun transfert externe enregistre.</td>
+                            <td colspan="6" class="text-center text-muted">Aucun transfert externe enregistre.</td>
+                        </tr>
+                    <?php else: ?>
+                        <tr class="table-secondary fw-bold">
+                            <td>Total general</td>
+                            <td class="text-end"><?= esc($totalOperations) ?></td>
+                            <td class="text-end"><?= number_format($totalMontantGeneral, 0, ',', ' ') ?> Ar</td>
+                            <td class="text-end"><?= number_format($totalFraisGeneral, 0, ',', ' ') ?> Ar</td>
+                            <td class="text-end"><?= number_format($totalCommissionGeneral, 0, ',', ' ') ?> Ar</td>
+                            <td class="text-end text-primary"><?= number_format($totalAEnvoyerGeneral, 0, ',', ' ') ?> Ar</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

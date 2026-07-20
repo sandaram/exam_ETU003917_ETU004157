@@ -316,22 +316,24 @@ class TransactionModel extends Model
 
     public function situationMontantsAEnvoyer(): array
     {
+        // Seuls les transferts vers un AUTRE operateur representent une dette envers ce dernier.
+        // Les scenarios "meme operateur" (interne, externe_direct) sont exclus ici.
         $rows = $this->db->table('operations o')
             ->select(
-                'op.nom AS operateur, o.mode_transfert, COUNT(o.id) AS nombre_operations, ' .
+                'op.nom AS operateur, COUNT(o.id) AS nombre_operations, ' .
                 'SUM(o.montant) AS total_montant, SUM(o.frais) AS total_frais, SUM(o.commission) AS total_commission'
             )
             ->join('operateurs op', 'op.id = o.operateur_destinataire_id')
-            ->whereIn('o.mode_transfert', ['autre_operateur', 'externe_intermediaire', 'externe_direct'])
-            ->groupBy('op.nom, o.mode_transfert')
+            ->whereIn('o.mode_transfert', ['autre_operateur', 'externe_intermediaire'])
+            ->groupBy('op.nom')
             ->orderBy('op.nom', 'ASC')
-            ->orderBy('o.mode_transfert', 'ASC')
             ->get()
             ->getResultArray();
 
         foreach ($rows as &$row) {
+            // Ces deux scenarios utilisent tous deux la formule "montant + commission".
             $row['total_a_envoyer'] = $this->calculerMontantAEnvoyer(
-                $row['mode_transfert'],
+                'autre_operateur',
                 (float) $row['total_montant'],
                 (float) $row['total_frais'],
                 (float) $row['total_commission']
