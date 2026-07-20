@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion Operateur - Mobile Money</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?= base_url('assets/vendor/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
+    <link href="<?= base_url('assets/css/app.css') ?>" rel="stylesheet">
 </head>
-<body class="bg-light">
-<div class="container d-flex align-items-center justify-content-center min-vh-100">
-    <div class="card shadow-sm border-0" style="width: 100%; max-width: 430px;">
+<body class="bg-light auth-shell">
+<div class="container d-flex align-items-center justify-content-center min-vh-100 py-4">
+    <div class="card shadow-sm border-0 auth-card">
         <div class="card-body p-4">
             <h1 class="h4 text-center text-primary mb-1">Mobile Money</h1>
             <p class="text-center text-muted mb-4">Connexion operateur</p>
@@ -18,7 +19,7 @@
             <?php endif; ?>
 
             <div class="alert alert-info small">
-                <div class="fw-semibold mb-1">Identifiants a taper</div>
+                <div class="fw-semibold mb-1">Identifiants locaux de test</div>
                 <div>Identifiant : <strong><?= esc($identifiantDemo) ?></strong></div>
                 <div>Mot de passe : <strong><?= esc($motDePasseDemo) ?></strong></div>
             </div>
@@ -42,5 +43,6 @@
         </div>
     </div>
 </div>
+<script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
 </body>
 </html>

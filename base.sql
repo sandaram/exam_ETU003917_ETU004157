@@ -45,6 +45,15 @@ CREATE TABLE operations (
     date_operation           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE administrateurs (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom_utilisateur VARCHAR(50) NOT NULL UNIQUE,
+    mot_de_passe    VARCHAR(255) NOT NULL,
+    role            VARCHAR(20) NOT NULL DEFAULT 'admin',
+    actif           INTEGER NOT NULL DEFAULT 1,
+    date_creation   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ---------------------------------------------------------
 -- 2. VUES
 -- ---------------------------------------------------------
@@ -124,6 +133,10 @@ INSERT INTO clients (numero_telephone, solde) VALUES
 ('0331234567', 50000),
 ('0372345678', 120000),
 ('0339876543', 0);
+
+-- Compte operateur/admin de test : admin / admin123
+INSERT INTO administrateurs (nom_utilisateur, mot_de_passe, role) VALUES
+('admin', '$2y$10$QafOivLWNMDXrTfVrducfuZ0eknQc02YN9OOUsVdDhYpsuRqg7BR.', 'admin');
 
 -- Quelques opérations de test
 INSERT INTO operations (client_id, client_destinataire_id, type_operation_id, montant, frais, solde_apres)
