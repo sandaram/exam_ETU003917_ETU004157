@@ -104,6 +104,22 @@
             text-decoration: none;
             font-size: 0.9rem;
         }
+        .logout-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    color: #e74c3c;
+    background-color: #fdf2f2;
+    border: 1px solid #f8d7da;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: #e74c3c;
+    color: #ffffff;
+}
     </style>
 </head>
 <body>

@@ -35,25 +35,30 @@ class ClientModel extends Model
      * Connecte le client ou l'inscrit automatiquement s'il n'existe pas
      */
     public function connnecterOuInscrire(string $telephone)
-    {
-        // 1. Vérification du préfixe
-        if (!$this->estPrefixeValide($telephone)) {
-            return false;
-        }
-
-        // 2. Recherche du client par son numéro de téléphone
-        $client = $this->where('numero_telephone', $telephone)->first();
-
-        // 3. S'il n'existe pas, création automatique à la volée
-        if (!$client) {
-            $id = $this->insert([
-                'numero_telephone' => $telephone,
-                'solde'            => 0
-            ]);
-
-            $client = $this->find($id);
-        }
-
-        return $client;
+{
+    // 1. Vérification de la longueur minimale / exacte (ex: 10 chiffres pour Madagascar)
+    if (strlen($telephone) !== 10 || !ctype_digit($telephone)) {
+        return false;
     }
+
+    // 2. Vérification du préfixe autorisé
+    if (!$this->estPrefixeValide($telephone)) {
+        return false;
+    }
+
+    // 3. Recherche du client par son numéro de téléphone
+    $client = $this->where('numero_telephone', $telephone)->first();
+
+    // 4. Inscription automatique si préfixe valide et format correct
+    if (!$client) {
+        $id = $this->insert([
+            'numero_telephone' => $telephone,
+            'solde'            => 0
+        ]);
+
+        $client = $this->find($id);
+    }
+
+    return $client;
+}
 }
