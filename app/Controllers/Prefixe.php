@@ -32,6 +32,18 @@ class Prefixe extends BaseController
         return redirect()->to('/operateur/prefixes');
     }
 
+    public function editForm($id)
+    {
+        $data['prefixe'] = $this->prefixeModel->find($id);
+
+        if (!$data['prefixe']) {
+            session()->setFlashdata('error', 'Préfixe introuvable.');
+            return redirect()->to('/operateur/prefixes');
+        }
+
+        return view('operateur/prefixes_edit', $data);
+    }
+
     public function update($id)
     {
         $prefixe = $this->request->getPost('prefixe');
