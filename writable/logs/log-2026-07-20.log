@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ERROR - 2026-07-20 07:28:05 --> Error connecting to the database: mysqli_sql_exception: No such file or directory in /home/sanda/Documents/examen_final_IHM/exam_ETU003917_ETU004157/system/Database/MySQLi/Connection.php:201
 Stack trace:
 #0 /home/sanda/Documents/examen_final_IHM/exam_ETU003917_ETU004157/system/Database/MySQLi/Connection.php(201): mysqli->real_connect()
@@ -115,10 +116,19 @@ in APPPATH/Controllers/Client/AuthController.php on line 40.
  1 APPPATH/Controllers/Client/AuthController.php(40): CodeIgniter\Debug\Exceptions->errorHandler()
  2 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\Client\AuthController->processLogin()
  3 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController()
+=======
+CRITICAL - 2026-07-20 07:49:11 --> CodeIgniter\Filters\Exceptions\FilterException: "auth" filter must have a matching alias defined.
+[Method: GET, Route: operateur/prefixes]
+in SYSTEMPATH/Filters/Filters.php on line 590.
+ 1 SYSTEMPATH/Filters/Filters.php(590): CodeIgniter\Filters\Exceptions\FilterException::forNoAlias()
+ 2 SYSTEMPATH/Filters/Filters.php(641): CodeIgniter\Filters\Filters->enableFilter()
+ 3 SYSTEMPATH/CodeIgniter.php(453): CodeIgniter\Filters\Filters->enableFilters()
+>>>>>>> dc4c3ab15117c0c6b0e3f53a90b7ca215bc5a903
  4 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
  5 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
  6 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
  7 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
+<<<<<<< HEAD
  8 SYSTEMPATH/rewrite.php(44): require_once('/home/sanda/Documents/examen_final_IHM/exam_ETU003917_ETU004157/public/index.php')
 ERROR - 2026-07-20 07:46:31 --> Error connecting to the database: mysqli_sql_exception: No such file or directory in /home/sanda/Documents/examen_final_IHM/exam_ETU003917_ETU004157/system/Database/MySQLi/Connection.php:201
 Stack trace:
@@ -270,3 +280,6 @@ in SYSTEMPATH/Database/BaseConnection.php on line 606.
 10 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
 11 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb()
 12 SYSTEMPATH/rewrite.php(44): require_once('/home/sanda/Documents/examen_final_IHM/exam_ETU003917_ETU004157/public/index.php')
+=======
+ 8 SYSTEMPATH/rewrite.php(44): require_once('/home/olivierdashgd/ITU/L2_ITU/s4/mrsRojo_tovo/exam_ETU003917_ETU004157/public/index.php')
+>>>>>>> dc4c3ab15117c0c6b0e3f53a90b7ca215bc5a903
