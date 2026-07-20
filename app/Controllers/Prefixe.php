@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\PrefixeModel;
+use App\Models\OperateurModel;
 
 class Prefixe extends BaseController
 {
@@ -16,14 +17,16 @@ class Prefixe extends BaseController
     public function index()
     {
         $data['prefixes'] = $this->prefixeModel->listAll();
+        $data['operateurs'] = (new OperateurModel())->listActifs();
         return view('operateur/prefixes', $data);
     }
 
     public function create()
     {
         $prefixe = $this->request->getPost('prefixe');
+        $operateurId = $this->request->getPost('operateur_id');
 
-        if (!$this->prefixeModel->createPrefixe($prefixe)) {
+        if (!$this->prefixeModel->createPrefixe($prefixe, $operateurId ? (int) $operateurId : null)) {
             session()->setFlashdata('errors', $this->prefixeModel->errors());
             return redirect()->back()->withInput();
         }
@@ -35,6 +38,7 @@ class Prefixe extends BaseController
     public function editForm($id)
     {
         $data['prefixe'] = $this->prefixeModel->find($id);
+        $data['operateurs'] = (new OperateurModel())->listActifs();
 
         if (!$data['prefixe']) {
             session()->setFlashdata('error', 'Préfixe introuvable.');
@@ -47,8 +51,9 @@ class Prefixe extends BaseController
     public function update($id)
     {
         $prefixe = $this->request->getPost('prefixe');
+        $operateurId = $this->request->getPost('operateur_id');
 
-        if (!$this->prefixeModel->updatePrefixe($id, $prefixe)) {
+        if (!$this->prefixeModel->updatePrefixe($id, $prefixe, $operateurId ? (int) $operateurId : null)) {
             session()->setFlashdata('errors', $this->prefixeModel->errors());
             return redirect()->back()->withInput();
         }

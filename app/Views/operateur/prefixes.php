@@ -38,11 +38,20 @@
         <div class="card-body">
             <form action="<?= base_url('operateur/prefixes/create') ?>" method="post" class="row g-3 align-items-end">
                 <?= csrf_field() ?>
-                <div class="col-md-8">
+                <div class="col-md-5">
                     <label for="prefixe" class="form-label">Nouveau prefixe</label>
                     <input type="text" class="form-control" id="prefixe" name="prefixe" maxlength="3" placeholder="Ex: 033" required>
                 </div>
                 <div class="col-md-4">
+                    <label for="operateur_id" class="form-label">Reseau</label>
+                    <select class="form-select" id="operateur_id" name="operateur_id">
+                        <option value="">Interne</option>
+                        <?php foreach ($operateurs as $operateur): ?>
+                            <option value="<?= esc($operateur['id']) ?>"><?= esc($operateur['nom']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <button type="submit" class="btn btn-primary w-100">Ajouter</button>
                 </div>
             </form>
@@ -51,13 +60,13 @@
 
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
-            <table class="table table-striped align-middle mb-0">
+            <table class="table table-striped align-middle mb-0" data-table-tools>
                 <thead>
                     <tr>
                         <th>Prefixe</th>
                         <th>Reseau</th>
                         <th>Statut</th>
-                        <th class="text-end">Actions</th>
+                        <th class="text-end no-sort">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,6 +80,9 @@
                                 </span>
                             </td>
                             <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="<?= base_url('operateur/prefixes/edit/' . $p['id']) ?>">
+                                    Modifier
+                                </a>
                                 <a class="btn btn-sm btn-outline-primary" href="<?= base_url('operateur/prefixes/toggle/' . $p['id']) ?>">
                                     <?= $p['actif'] ? 'Desactiver' : 'Activer' ?>
                                 </a>
@@ -92,5 +104,6 @@
 </main>
 
 <script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/table-tools.js') ?>"></script>
 </body>
 </html>

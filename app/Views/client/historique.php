@@ -14,7 +14,7 @@
         <h3 class="mb-4">Historique des operations</h3>
 
         <div class="table-responsive">
-            <table class="table table-striped align-middle">
+            <table class="table table-striped align-middle" data-table-tools>
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -36,13 +36,14 @@
                     <?php foreach ($operations as $operation): ?>
                         <?php
                             $estTransfert = $operation['type_operation'] === 'TRANSFERT';
-                            $estExterne = $estTransfert && (($operation['mode_transfert'] ?? 'interne') !== 'interne');
+                            $mode = $operation['mode_transfert'] ?? 'interne';
+                            $estExterne = $estTransfert && in_array($mode, ['autre_operateur', 'externe_intermediaire', 'externe_direct'], true);
                             $entrant = $estTransfert && (int) ($operation['client_destinataire_id'] ?? 0) === $clientId;
                             $sens = '-';
                             $numero = '-';
 
                             if ($estExterne) {
-                                $sens = ($operation['mode_transfert'] ?? '') === 'externe_direct' ? 'Externe direct' : 'Via operateur';
+                                $sens = 'Autre operateur';
                                 $numero = ($operation['numero_destinataire_externe'] ?? '-') . ' - ' . ($operation['operateur_externe'] ?? 'Operateur externe');
                             } elseif ($estTransfert) {
                                 $sens = $entrant ? 'Recu de' : 'Envoye a';
@@ -71,5 +72,6 @@
     </div>
 </div>
 <script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/table-tools.js') ?>"></script>
 </body>
 </html>

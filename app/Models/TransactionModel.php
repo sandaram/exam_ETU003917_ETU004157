@@ -96,7 +96,14 @@ class TransactionModel extends Model
         ];
     }
 
-    public function transferer(int $clientId, string $telephoneDestinataire, float $montant, string $modeTransfert = 'interne'): array
+    public function transferer(
+        int $clientId,
+        string $telephoneDestinataire,
+        float $montant,
+        string $modeTransfert = 'interne',
+        ?int $operateurDestinataireId = null,
+        bool $inclureFraisRetrait = false
+    ): array
     {
         if ($montant <= 0 || strlen($telephoneDestinataire) !== 10 || !ctype_digit($telephoneDestinataire)) {
             return ['success' => false, 'message' => 'Montant invalide ou hors barème.'];
@@ -109,21 +116,22 @@ class TransactionModel extends Model
             return ['success' => false, 'message' => 'Client introuvable.'];
         }
 
-        if ($clientModel->estPrefixeValide($telephoneDestinataire)) {
-            return $this->transfererInterne($clientId, $telephoneDestinataire, $montant);
+        if ($modeTransfert !== 'autre_operateur') {
+            return $this->transfererInterne($clientId, $telephoneDestinataire, $montant, $inclureFraisRetrait);
         }
 
-        return $this->transfererExterne($expediteur, $telephoneDestinataire, $montant, $modeTransfert);
+        return $this->transfererExterne($expediteur, $telephoneDestinataire, $montant, $operateurDestinataireId);
     }
 
-    private function transfererInterne(int $clientId, string $telephoneDestinataire, float $montant): array
+    private function transfererInterne(int $clientId, string $telephoneDestinataire, float $montant, bool $inclureFraisRetrait = false): array
     {
         $frais = $this->calculerFrais('TRANSFERT', $montant);
+        $fraisRetrait = $inclureFraisRetrait ? $this->calculerFrais('RETRAIT', $montant) : 0;
         $clientModel = new ClientModel();
         $expediteur = $clientModel->find($clientId);
         $destinataire = $clientModel->connnecterOuInscrire($telephoneDestinataire);
 
-        if ($frais === null || !$expediteur || !$destinataire) {
+        if ($frais === null || $fraisRetrait === null || !$expediteur || !$destinataire) {
             return ['success' => false, 'message' => 'Destinataire invalide.'];
         }
 
@@ -131,7 +139,8 @@ class TransactionModel extends Model
             return ['success' => false, 'message' => 'Impossible de transferer vers le meme numero.'];
         }
 
-        $totalDebit = $montant + $frais;
+        $totalFrais = (float) $frais + (float) $fraisRetrait;
+        $totalDebit = $montant + $totalFrais;
         if ((float) $expediteur['solde'] < $totalDebit) {
             return ['success' => false, 'message' => 'Solde insuffisant pour couvrir le montant et les frais.'];
         }
@@ -139,7 +148,7 @@ class TransactionModel extends Model
         $this->db->transStart();
 
         $soldeExpediteur = (float) $expediteur['solde'] - $totalDebit;
-        $soldeDestinataire = (float) $destinataire['solde'] + $montant;
+        $soldeDestinataire = (float) $destinataire['solde'] + $montant + (float) $fraisRetrait;
 
         $clientModel->update($clientId, ['solde' => $soldeExpediteur]);
         $clientModel->update((int) $destinataire['id'], ['solde' => $soldeDestinataire]);
@@ -149,7 +158,7 @@ class TransactionModel extends Model
             'client_destinataire_id' => $destinataire['id'],
             'type_operation_id'      => $this->typeOperationId('TRANSFERT'),
             'montant'                => $montant,
-            'frais'                  => $frais,
+            'frais'                  => $totalFrais,
             'solde_apres'            => $soldeExpediteur,
             'mode_transfert'         => 'interne',
             'commission'             => 0,
@@ -163,19 +172,88 @@ class TransactionModel extends Model
         ];
     }
 
-    private function transfererExterne(array $expediteur, string $telephoneDestinataire, float $montant, string $modeTransfert): array
+    public function transfererMultiple(int $clientId, array $telephones, float $montantTotal, bool $inclureFraisRetrait = false): array
     {
-        $modeTransfert = $modeTransfert === 'externe_direct' ? 'externe_direct' : 'externe_intermediaire';
-        $frais = $modeTransfert === 'externe_intermediaire' ? $this->calculerFrais('TRANSFERT', $montant) : 0;
+        $telephones = array_values(array_unique(array_filter(array_map(static fn ($numero) => trim((string) $numero), $telephones))));
+
+        if ($montantTotal <= 0 || count($telephones) < 2) {
+            return ['success' => false, 'message' => 'Veuillez saisir au moins deux numeros et un montant valide.'];
+        }
+
+        $clientModel = new ClientModel();
+        $expediteur = $clientModel->find($clientId);
+
+        if (!$expediteur) {
+            return ['success' => false, 'message' => 'Client introuvable.'];
+        }
+
+        $montantParNumero = round($montantTotal / count($telephones), 2);
+        $fraisParNumero = $this->calculerFrais('TRANSFERT', $montantParNumero);
+        $fraisRetraitParNumero = $inclureFraisRetrait ? $this->calculerFrais('RETRAIT', $montantParNumero) : 0;
+
+        if ($fraisParNumero === null || $fraisRetraitParNumero === null) {
+            return ['success' => false, 'message' => 'Montant par numero hors bareme.'];
+        }
+
+        foreach ($telephones as $telephone) {
+            if (strlen($telephone) !== 10 || !ctype_digit($telephone) || !$clientModel->estPrefixeValide($telephone)) {
+                return ['success' => false, 'message' => 'Envoi multiple autorise uniquement vers des numeros du meme operateur.'];
+            }
+
+            if ($telephone === $expediteur['numero_telephone']) {
+                return ['success' => false, 'message' => 'Impossible de transferer vers votre propre numero.'];
+            }
+        }
+
+        $totalFraisParNumero = (float) $fraisParNumero + (float) $fraisRetraitParNumero;
+        $totalDebit = count($telephones) * ($montantParNumero + $totalFraisParNumero);
+
+        if ((float) $expediteur['solde'] < $totalDebit) {
+            return ['success' => false, 'message' => 'Solde insuffisant pour couvrir les montants et les frais.'];
+        }
+
+        $this->db->transStart();
+
+        $soldeExpediteur = (float) $expediteur['solde'] - $totalDebit;
+        $clientModel->update($clientId, ['solde' => $soldeExpediteur]);
+
+        foreach ($telephones as $telephone) {
+            $destinataire = $clientModel->connnecterOuInscrire($telephone);
+            $soldeDestinataire = (float) $destinataire['solde'] + $montantParNumero + (float) $fraisRetraitParNumero;
+            $clientModel->update((int) $destinataire['id'], ['solde' => $soldeDestinataire]);
+
+            $this->insert([
+                'client_id'              => $clientId,
+                'client_destinataire_id' => $destinataire['id'],
+                'type_operation_id'      => $this->typeOperationId('TRANSFERT'),
+                'montant'                => $montantParNumero,
+                'frais'                  => $totalFraisParNumero,
+                'solde_apres'            => $soldeExpediteur,
+                'mode_transfert'         => 'interne_multiple',
+                'commission'             => 0,
+            ]);
+        }
+
+        $this->db->transComplete();
+
+        return [
+            'success' => $this->db->transStatus(),
+            'message' => $this->db->transStatus() ? 'Transferts multiples effectues avec succes.' : 'Echec de l envoi multiple.',
+        ];
+    }
+
+    private function transfererExterne(array $expediteur, string $telephoneDestinataire, float $montant, ?int $operateurDestinataireId): array
+    {
+        $frais = $this->calculerFrais('TRANSFERT', $montant);
         $operateurModel = new OperateurModel();
-        $operateur = $operateurModel->trouverOperateurParNumero($telephoneDestinataire);
+        $operateur = $operateurDestinataireId ? $operateurModel->findActif($operateurDestinataireId) : null;
 
         if (!$operateur || $frais === null) {
-            return ['success' => false, 'message' => 'Operateur destinataire invalide.'];
+            return ['success' => false, 'message' => 'Veuillez choisir un operateur destinataire valide.'];
         }
 
         $commission = $operateurModel->calculerCommission($operateur, $montant);
-        $totalDebit = $this->calculerMontantAEnvoyer($modeTransfert, $montant, (float) $frais, $commission);
+        $totalDebit = $montant + (float) $frais + $commission;
 
         if ((float) $expediteur['solde'] < $totalDebit) {
             return ['success' => false, 'message' => 'Solde insuffisant pour couvrir le montant, les frais et la commission.'];
@@ -193,7 +271,7 @@ class TransactionModel extends Model
             'montant'                       => $montant,
             'frais'                         => $frais,
             'solde_apres'                   => $soldeExpediteur,
-            'mode_transfert'                => $modeTransfert,
+            'mode_transfert'                => 'autre_operateur',
             'operateur_destinataire_id'     => $operateur['id'],
             'numero_destinataire_externe'   => $telephoneDestinataire,
             'commission'                    => $commission,
@@ -203,7 +281,7 @@ class TransactionModel extends Model
 
         return [
             'success' => $this->db->transStatus(),
-            'message' => $this->db->transStatus() ? 'Transfert externe enregistre avec succes.' : 'Echec du transfert externe.',
+            'message' => $this->db->transStatus() ? 'Transfert vers autre operateur enregistre avec succes.' : 'Echec du transfert vers autre operateur.',
         ];
     }
 
@@ -229,11 +307,11 @@ class TransactionModel extends Model
 
     public function calculerMontantAEnvoyer(string $modeTransfert, float $montant, float $frais, float $commission): float
     {
-        if ($modeTransfert === 'externe_direct') {
-            return $montant + $commission;
+        if ($modeTransfert === 'interne') {
+            return $montant + $frais;
         }
 
-        return $montant + $frais + $commission;
+        return $montant + $commission;
     }
 
     public function situationMontantsAEnvoyer(): array
@@ -244,7 +322,7 @@ class TransactionModel extends Model
                 'SUM(o.montant) AS total_montant, SUM(o.frais) AS total_frais, SUM(o.commission) AS total_commission'
             )
             ->join('operateurs op', 'op.id = o.operateur_destinataire_id')
-            ->whereIn('o.mode_transfert', ['externe_intermediaire', 'externe_direct'])
+            ->whereIn('o.mode_transfert', ['autre_operateur', 'externe_intermediaire', 'externe_direct'])
             ->groupBy('op.nom, o.mode_transfert')
             ->orderBy('op.nom', 'ASC')
             ->orderBy('o.mode_transfert', 'ASC')
@@ -273,6 +351,11 @@ class TransactionModel extends Model
         $baremeModel = new BaremeFraisModel();
 
         return $baremeModel->calculerFrais($typeId, $montant);
+    }
+
+    public function baremesPour(string $codeOperation): array
+    {
+        return (new BaremeFraisModel())->listByType($this->typeOperationId($codeOperation));
     }
 
     private function typeOperationId(string $code): int

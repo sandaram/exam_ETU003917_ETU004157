@@ -8,6 +8,7 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="<?= base_url('operateur/prefixes') ?>">Prefixes</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= base_url('operateur/baremes') ?>">Baremes</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= base_url('operateur/operateurs') ?>">Operateurs</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= base_url('operateur/rapports/gains') ?>">Gains</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= base_url('operateur/rapports/comptes') ?>">Comptes clients</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= base_url('operateur/rapports/montants-a-envoyer') ?>">Autres operateurs</a></li>

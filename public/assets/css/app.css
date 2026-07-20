@@ -164,6 +164,40 @@ a:hover {
     text-transform: uppercase;
 }
 
+.table-sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.table-sortable::after {
+    color: rgba(244, 248, 245, 0.45);
+    content: "↕";
+    font-size: 0.72rem;
+    margin-left: 0.35rem;
+}
+
+.table-sortable[data-sort-direction="asc"]::after {
+    content: "↑";
+}
+
+.table-sortable[data-sort-direction="desc"]::after {
+    content: "↓";
+}
+
+.table-filter {
+    max-width: 340px;
+}
+
+.table-number-input {
+    max-width: 130px;
+}
+
+.input-group-text {
+    background-color: rgba(9, 18, 27, 0.82);
+    border-color: rgba(164, 184, 190, 0.26);
+    color: var(--app-muted);
+}
+
 .badge.text-bg-success {
     background-color: rgba(184, 243, 75, 0.18) !important;
     color: var(--app-accent) !important;

@@ -20,7 +20,7 @@
 
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
-            <table class="table table-striped align-middle mb-0">
+            <table class="table table-striped align-middle mb-0" data-table-tools>
                 <thead>
                     <tr>
                         <th>Operateur</th>
@@ -34,7 +34,12 @@
                 </thead>
                 <tbody>
                     <?php foreach ($lignes as $ligne): ?>
-                        <?php $scenario = $ligne['mode_transfert'] === 'externe_direct' ? 'Direct' : 'Via notre operateur'; ?>
+                        <?php
+                            $scenario = match ($ligne['mode_transfert']) {
+                                'interne', 'externe_direct' => 'Même operateur',
+                                default => 'Autre operateur',
+                            };
+                        ?>
                         <tr>
                             <td><?= esc($ligne['operateur']) ?></td>
                             <td><?= esc($scenario) ?></td>
@@ -57,5 +62,6 @@
 </main>
 
 <script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/table-tools.js') ?>"></script>
 </body>
 </html>

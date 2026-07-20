@@ -45,19 +45,22 @@ class PrefixeModel extends Model
     }
 
     // Crée un nouveau préfixe (actif par défaut)
-    public function createPrefixe(string $prefixe): bool
+    public function createPrefixe(string $prefixe, ?int $operateurId = null): bool
     {
         return (bool) $this->save([
             'prefixe'      => $prefixe,
             'actif'        => 1,
-            'operateur_id' => null,
+            'operateur_id' => $operateurId,
         ]);
     }
 
     // Modifie un préfixe existant
-    public function updatePrefixe(int $id, string $prefixe): bool
+    public function updatePrefixe(int $id, string $prefixe, ?int $operateurId = null): bool
     {
-        return $this->update($id, ['prefixe' => $prefixe]);
+        return $this->update($id, [
+            'prefixe'      => $prefixe,
+            'operateur_id' => $operateurId,
+        ]);
     }
 
     // Inverse le statut actif/inactif d'un préfixe

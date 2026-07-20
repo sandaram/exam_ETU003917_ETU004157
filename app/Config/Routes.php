@@ -42,6 +42,7 @@ $routes->group('operateur', ['namespace' => 'App\Controllers\Operateur'], static
 $routes->group('operateur/prefixes', ['filter' => 'operateurAuth'], function ($routes) {
     $routes->get('/', 'Prefixe::index');
     $routes->post('create', 'Prefixe::create');
+    $routes->get('edit/(:num)', 'Prefixe::editForm/$1');
     $routes->post('update/(:num)', 'Prefixe::update/$1');
     $routes->get('toggle/(:num)', 'Prefixe::toggle/$1');
     $routes->get('delete/(:num)', 'Prefixe::delete/$1');
@@ -54,6 +55,11 @@ $routes->group('operateur/baremes', ['filter' => 'operateurAuth'], function ($ro
     $routes->get('edit/(:num)', 'BaremeFrais::editForm/$1');
     $routes->post('update/(:num)', 'BaremeFrais::update/$1');
     $routes->get('delete/(:num)', 'BaremeFrais::delete/$1');
+});
+
+$routes->group('operateur/operateurs', ['filter' => 'operateurAuth'], function ($routes) {
+    $routes->get('/', 'Operateur::index');
+    $routes->post('update/(:num)', 'Operateur::update/$1');
 });
 
 $routes->group('operateur/rapports', ['filter' => 'operateurAuth'], function ($routes) {

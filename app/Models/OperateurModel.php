@@ -19,6 +19,27 @@ class OperateurModel extends Model
             ->findAll();
     }
 
+    public function findActif(int $id): ?array
+    {
+        return $this->where('id', $id)
+            ->where('actif', 1)
+            ->first() ?: null;
+    }
+
+    public function listAll(): array
+    {
+        return $this->orderBy('nom', 'ASC')->findAll();
+    }
+
+    public function updateOperateur(int $id, array $payload): bool
+    {
+        return $this->update($id, [
+            'nom'            => trim((string) ($payload['nom'] ?? '')),
+            'commission_pct' => (float) ($payload['commission_pct'] ?? 0),
+            'actif'          => isset($payload['actif']) ? 1 : 0,
+        ]);
+    }
+
     public function trouverOperateurParNumero(string $telephone): ?array
     {
         if (strlen($telephone) < 3 || !ctype_digit($telephone)) {

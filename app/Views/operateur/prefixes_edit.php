@@ -31,6 +31,17 @@
                             <label for="prefixe" class="form-label">Prefixe</label>
                             <input type="text" class="form-control" id="prefixe" name="prefixe" maxlength="3" value="<?= esc($prefixe['prefixe']) ?>" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="operateur_id" class="form-label">Reseau</label>
+                            <select class="form-select" id="operateur_id" name="operateur_id">
+                                <option value="">Interne</option>
+                                <?php foreach ($operateurs as $operateur): ?>
+                                    <option value="<?= esc($operateur['id']) ?>" <?= (string) ($prefixe['operateur_id'] ?? '') === (string) $operateur['id'] ? 'selected' : '' ?>>
+                                        <?= esc($operateur['nom']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Enregistrer</button>
                             <a href="<?= base_url('operateur/prefixes') ?>" class="btn btn-outline-secondary">Annuler</a>

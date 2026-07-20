@@ -35,7 +35,7 @@
             <h1 class="h3 mb-3">Situation des comptes clients</h1>
         </div>
         <div class="table-responsive">
-            <table class="table table-striped align-middle mb-0">
+            <table class="table table-striped align-middle mb-0" data-table-tools>
                 <thead>
                     <tr>
                         <th>Numero de telephone</th>
@@ -65,5 +65,6 @@
 </main>
 
 <script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/table-tools.js') ?>"></script>
 </body>
 </html>

@@ -122,9 +122,7 @@
 
 ## 🛠️ PHASE 5 : Côté Opérateur — Interconnexion (Olivier) — (13h00 - 15h15)
 
-> **Modèle retenu (ajusté) :** un seul opérateur géré dans l'app (le vôtre, avec login admin). Les autres opérateurs sont juste une **liste de référence** (`operateurs` : nom + commission), sans compte ni login. Un préfixe avec `operateur_id = NULL` est interne ; rempli, il est externe et rattaché à un opérateur concurrent. Deux scénarios de transfert externe à distinguer via `operations.mode_transfert` :
-> - `externe_intermediaire` → montant à envoyer = `montant + frais + commission`
-> - `externe_direct` → montant à envoyer = `montant + commission` (pas de frais, votre opérateur n'intervient pas dans l'acheminement)
+> **Modèle retenu (ajusté) :** un seul opérateur géré dans l'app (le vôtre, avec login admin). Le transfert **direct** correspond maintenant à un envoi sur le même opérateur : montant à payer = `montant + frais`. Les autres opérateurs sont une **liste de référence** (`operateurs` : nom + commission), sans compte ni login. Un préfixe avec `operateur_id = NULL` est interne ; rempli, il est externe et rattaché à un opérateur concurrent. Pour un transfert vers **autre opérateur**, le client choisit l'opérateur destinataire et la commission appliquée vient de sa fiche admin : montant débité = `montant + frais + commission`, mais le montant à envoyer à l'autre opérateur = `montant + commission` car les frais restent chez l'opérateur expéditeur.
 
 ### 🏢 5.0 Référentiel des opérateurs externes (0h25)
 - [x] **[Base/SQL]** `base.sql`
@@ -134,6 +132,9 @@
 - [x] **[Base/Modèle]** `app/Models/OperateurModel.php`
   - Liste des opérateurs actifs.
   - Logique métier : `trouverOperateurParNumero()`, `calculerCommission()`.
+- [x] **[Intégration/Affichage]** `app/Controllers/Operateur.php`, `app/Views/operateur/operateurs.php`
+  - Ecran admin de configuration des opérateurs externes.
+  - Modification du pourcentage de commission et du statut actif/inactif.
 
 ### 🌐 5.1 Détection réseau interne / externe (0h20)
 - [x] **[Base/Modèle]** `app/Models/PrefixeModel.php` (mis à jour)
@@ -150,7 +151,7 @@
 
 ### 📤 5.3 Rapport : montants à envoyer à chaque opérateur (0h40)
 - [x] **[Base/Modèle]** `app/Models/TransactionModel.php`
-  - Méthode `calculerMontantAEnvoyer(string $modeTransfert, float $montant, float $frais, float $commission): float` — applique la formule du bon scénario.
+  - Méthode `calculerMontantAEnvoyer(string $modeTransfert, float $montant, float $frais, float $commission): float` — même opérateur = `montant + frais`, autre opérateur = `montant + commission`.
   - Méthode `situationMontantsAEnvoyer(): array` — Query Builder en PHP, groupé par opérateur ET par scénario (`mode_transfert`).
 - [x] **[Intégration]** `app/Controllers/Operateur/Rapport.php`
   - Méthode `montantsAEnvoyer()`.
@@ -164,37 +165,39 @@
 
 > ⚠️ **Dépendance avec Olivier** : cette phase utilise `PrefixeModel::estReseauPropre()` et `OperateurModel` (`trouverOperateurParNumero()`, `calculerCommission()`) créés en Phase 5.0/5.1. **Faire un `git pull` avant de commencer**, pour ne pas dupliquer cette logique côté client.
 
-### 🌍 6.1 Détection et calcul lors d'un transfert externe (0h40)
+### 🌍 6.1 Choix et calcul lors d'un transfert vers autre opérateur (0h40)
 - [x] **[Fonction/Logique]** `app/Models/TransactionModel.php`
-  - Dans le flux de transfert : appeler `PrefixeModel::estReseauPropre($numeroDestinataire)`.
-    - Si `true` → transfert interne classique (barème normal, `mode_transfert = 'interne'`, comme en v1).
-    - Si `false` → transfert externe : appeler `OperateurModel::trouverOperateurParNumero()` puis `calculerCommission()`.
-  - Choix côté formulaire pour préciser le scénario : **via intermédiaire** ou **direct**.
-    - Via intermédiaire → `frais` = barème normal (comme un transfert classique) + `commission` calculée.
-    - Direct → `frais = 0` (votre opérateur n'intervient pas) + `commission` calculée.
+  - Même opérateur/direct → transfert interne classique (barème normal, `mode_transfert = 'interne'`), débit = `montant + frais`.
+  - Autre opérateur → opérateur choisi dans une liste, puis `OperateurModel::calculerCommission()`.
+  - Vérifier le solde suffisant : `solde >= montant + frais + commission` pour autre opérateur, avec frais conservés par l'opérateur expéditeur.
   - Enregistrer `mode_transfert`, `operateur_destinataire_id`, `numero_destinataire_externe`, `commission` dans `operations`.
 - [x] **[Intégration]** `app/Controllers/Client/TransactionController.php`
-  - Adapter `processTransfert()` pour lire le numéro destinataire, détecter interne/externe, et le scénario choisi (`mode_transfert`).
-  - Vérifier le solde suffisant : `solde >= montant + frais + commission` (peu importe le scénario).
+  - Adapter `processTransfert()` pour lire le type de transfert et l'opérateur destinataire choisi.
 - [x] **[Affichage]** `app/Views/client/transfert.php`
-  - Select "Via notre opérateur" / "Direct vers l'autre opérateur" ; ignoré si le numéro est interne.
+  - Select "Même opérateur" / "Autre opérateur".
+  - Liste des opérateurs destinataires visible uniquement pour "Autre opérateur".
+
+### 🔎 6.4 Filtres et tris des tableaux (0h25)
+- [x] **[Affichage/JS]** `public/assets/js/table-tools.js`, vues `client/*` et `operateur/*`
+  - Ajout d'un filtre texte et d'un tri par colonne sur tous les tableaux métier.
 
 ### 💸 6.2 Frais à la charge de l'expéditeur (transferts internes) (0h25)
-- [ ] **[Fonction/Logique]** `app/Models/TransactionModel.php`
-  - Option `inclureFrais` (bool) pour les transferts **internes** uniquement : si activé, les frais sont ajoutés au débit de l'expéditeur au lieu d'être déduits du montant reçu par le destinataire.
-- [ ] **[Intégration]** `app/Controllers/Client/TransactionController.php`
-  - Lire `$this->request->getPost('inclure_frais')` et ajuster le calcul du débit/crédit en conséquence.
-- [ ] **[Affichage]** `app/Views/client/transfert.php`
-  - Case à cocher "Inclure les frais de retrait lors de l'envoi" (visible uniquement pour un transfert interne).
+- [x] **[Fonction/Logique]** `app/Models/TransactionModel.php`
+  - Option `inclureFraisRetrait` pour les transferts **même opérateur uniquement** : si activée, les frais de retrait sont ajoutés au débit de l'expéditeur et crédités au destinataire.
+  - Aucun frais de retrait n'est appliqué pour les autres opérateurs.
+- [x] **[Intégration]** `app/Controllers/Client/TransactionController.php`
+  - Lire `$this->request->getPost('inclure_frais_retrait')` et ajuster le calcul du débit/crédit en conséquence.
+- [x] **[Affichage]** `app/Views/client/transfert.php`
+  - Case à cocher "Inclure les frais de retrait dans l'envoi" disponible uniquement pour un transfert même opérateur.
 
 ### 👥 6.3 Envoi multiple vers plusieurs numéros (0h55)
-- [ ] **[Fonction/Logique]** `app/Models/TransactionModel.php`
-  - Méthode `transfertMultiple(array $numeros, float $montantTotal, ?bool $viaIntermediaire = null): array` — divise `$montantTotal` par le nombre de destinataires puis exécute un transfert par numéro (chacun peut être interne ou externe, détecté indépendamment via `estReseauPropre()`).
-- [ ] **[Intégration]** `app/Controllers/Client/TransactionController.php`
-  - Méthode `processTransfertMultiple()`.
-  - **Route :** `POST /client/transfert/multiple`
-- [ ] **[Affichage]** `app/Views/client/transfert.php`
-  - Champ dynamique pour ajouter plusieurs numéros destinataires + aperçu du montant réparti (et du scénario détecté) par numéro.
+- [x] **[Fonction/Logique]** `app/Models/TransactionModel.php`
+  - Méthode `transfererMultiple(array $numeros, float $montantTotal, bool $inclureFraisRetrait): array` — divise `$montantTotal` par le nombre de destinataires puis exécute un transfert par numéro.
+  - Même opérateur uniquement.
+- [x] **[Intégration]** `app/Controllers/Client/TransactionController.php`
+  - Gestion du mode `type_envoi = multiple` dans `processTransfert()`.
+- [x] **[Affichage]** `app/Views/client/transfert.php`
+  - Champ multi-numéros + aperçu du montant réparti par numéro.
 
 ---
 

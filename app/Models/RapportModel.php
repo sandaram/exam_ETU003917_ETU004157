@@ -18,18 +18,41 @@ class RapportModel extends Model
 
     public function situationGains(): array
     {
-        return $this->db->table('vue_situation_gains')->get()->getResultArray();
+        $fraisOperateur = $this->db->table('operations o')
+            ->select(
+                "'Notre operateur' AS beneficiaire, " .
+                't.code AS type_operation, COUNT(o.id) AS nombre_operations, SUM(o.frais) AS total_gains'
+            , false)
+            ->join('types_operation t', 't.id = o.type_operation_id')
+            ->whereIn('t.code', ['RETRAIT', 'TRANSFERT'])
+            ->where('o.frais >', 0)
+            ->groupBy('t.code')
+            ->get()
+            ->getResultArray();
+
+        $commissionsAutres = $this->db->table('operations o')
+            ->select(
+                "COALESCE(op.nom, 'Autre operateur') AS beneficiaire, " .
+                "'COMMISSION' AS type_operation, COUNT(o.id) AS nombre_operations, SUM(o.commission) AS total_gains"
+            , false)
+            ->join('operateurs op', 'op.id = o.operateur_destinataire_id', 'left')
+            ->where('o.commission >', 0)
+            ->groupBy('op.nom')
+            ->get()
+            ->getResultArray();
+
+        return array_merge($fraisOperateur, $commissionsAutres);
     }
 
     // Total général des frais perçus, toutes opérations confondues
     public function totalGains(): float
     {
-        $result = $this->db->table('vue_situation_gains')
-                            ->selectSum('total_frais_percus')
+        $result = $this->db->table('operations')
+                            ->select('SUM(frais + commission) AS total')
                             ->get()
                             ->getRowArray();
 
-        return (float) ($result['total_frais_percus'] ?? 0);
+        return (float) ($result['total'] ?? 0);
     }
 
     // Gains filtrés sur une période (utile si vous ajoutez un filtre de dates plus tard)

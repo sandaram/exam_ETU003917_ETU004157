@@ -29,14 +29,14 @@
 
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
-            <table class="table table-striped align-middle mb-0">
+            <table class="table table-striped align-middle mb-0" data-table-tools>
                 <thead>
                     <tr>
                         <th>Type d'operation</th>
                         <th class="text-end">Montant min</th>
                         <th class="text-end">Montant max</th>
                         <th class="text-end">Frais</th>
-                        <th class="text-end">Actions</th>
+                        <th class="text-end no-sort">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,5 +64,6 @@
 </main>
 
 <script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/table-tools.js') ?>"></script>
 </body>
 </html>
