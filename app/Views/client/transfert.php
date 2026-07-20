@@ -7,8 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+<?= view('partials/client_navbar') ?>
 <div class="container py-5" style="max-width: 520px;">
-    <a href="<?= base_url('client/dashboard') ?>" class="btn btn-link px-0 mb-3">Retour</a>
     <div class="card shadow-sm p-4">
         <h3 class="mb-4">Faire un transfert</h3>
 
@@ -31,5 +31,6 @@
         </form>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

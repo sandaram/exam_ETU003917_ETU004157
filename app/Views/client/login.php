@@ -37,6 +37,10 @@
 
             <button type="submit" class="btn btn-primary w-100">Se connecter / S'inscrire</button>
         </form>
+
+        <div class="text-center mt-3">
+            <a href="<?= base_url('operateur/login') ?>" class="link-secondary">Connexion operateur</a>
+        </div>
     </div>
 </div>
 

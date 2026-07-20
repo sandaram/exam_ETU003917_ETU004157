@@ -1,43 +1,67 @@
-<h1>Barèmes de frais par tranche</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baremes - Mobile Money</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<?= view('partials/operateur_navbar') ?>
 
-<?php if (session()->getFlashdata('success')): ?>
-    <p class="message-success"><?= session()->getFlashdata('success') ?></p>
-<?php endif; ?>
+<main class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Baremes de frais</h1>
+            <p class="text-muted mb-0">Gestion des frais par type d'operation et tranche de montant.</p>
+        </div>
+        <a href="<?= base_url('operateur/baremes/create') ?>" class="btn btn-primary align-self-md-start">Ajouter une tranche</a>
+    </div>
 
-<?php if (session()->getFlashdata('error')): ?>
-    <p class="message-error"><?= session()->getFlashdata('error') ?></p>
-<?php endif; ?>
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success"><?= esc(session()->getFlashdata('success')) ?></div>
+    <?php endif; ?>
 
-<a href="/operateur/baremes/create">Ajouter une tranche</a>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger"><?= esc(session()->getFlashdata('error')) ?></div>
+    <?php endif; ?>
 
-<table class="table-baremes">
-    <thead>
-        <tr>
-            <th>Type d'opération</th>
-            <th>Montant min</th>
-            <th>Montant max</th>
-            <th>Frais</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($baremes as $b): ?>
-            <tr>
-                <td><?= esc($b['libelle']) ?></td>
-                <td><?= esc($b['montant_min']) ?></td>
-                <td><?= esc($b['montant_max']) ?></td>
-                <td><?= esc($b['frais']) ?></td>
-                <td>
-                    <a href="/operateur/baremes/edit/<?= $b['id'] ?>">Modifier</a>
-                    <a href="/operateur/baremes/delete/<?= $b['id'] ?>"
-                        onclick="return confirm('Confirmer la suppression ?')">Supprimer</a>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        <?php if (empty($baremes)): ?>
-            <tr>
-                <td colspan="5">Aucun barème enregistré.</td>
-            </tr>
-        <?php endif; ?>
-    </tbody>
-</table>
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Type d'operation</th>
+                        <th class="text-end">Montant min</th>
+                        <th class="text-end">Montant max</th>
+                        <th class="text-end">Frais</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($baremes as $b): ?>
+                        <tr>
+                            <td><?= esc($b['libelle']) ?></td>
+                            <td class="text-end"><?= number_format((float) $b['montant_min'], 0, ',', ' ') ?> Ar</td>
+                            <td class="text-end"><?= number_format((float) $b['montant_max'], 0, ',', ' ') ?> Ar</td>
+                            <td class="text-end"><?= number_format((float) $b['frais'], 0, ',', ' ') ?> Ar</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="<?= base_url('operateur/baremes/edit/' . $b['id']) ?>">Modifier</a>
+                                <a class="btn btn-sm btn-outline-danger" href="<?= base_url('operateur/baremes/delete/' . $b['id']) ?>" onclick="return confirm('Confirmer la suppression ?')">Supprimer</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <?php if (empty($baremes)): ?>
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Aucun bareme enregistre.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

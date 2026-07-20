@@ -1,56 +1,93 @@
-<h1>Gestion des préfixes opérateur</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefixes Operateur - Mobile Money</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<?= view('partials/operateur_navbar') ?>
 
-<?php if (session()->getFlashdata('success')): ?>
-    <p class="message-success"><?= session()->getFlashdata('success') ?></p>
-<?php endif; ?>
+<main class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Gestion des prefixes</h1>
+            <p class="text-muted mb-0">Ajoutez, activez ou supprimez les prefixes autorises.</p>
+        </div>
+    </div>
 
-<?php if (session()->getFlashdata('error')): ?>
-    <p class="message-error"><?= session()->getFlashdata('error') ?></p>
-<?php endif; ?>
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success"><?= esc(session()->getFlashdata('success')) ?></div>
+    <?php endif; ?>
 
-<?php if (session()->getFlashdata('errors')): ?>
-    <ul class="message-error">
-        <?php foreach (session()->getFlashdata('errors') as $error): ?>
-            <li><?= esc($error) ?></li>
-        <?php endforeach; ?>
-    </ul>
-<?php endif; ?>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger"><?= esc(session()->getFlashdata('error')) ?></div>
+    <?php endif; ?>
 
-<form action="/operateur/prefixes/create" method="post" class="form-prefixe">
-    <?= csrf_field() ?>
-    <label for="prefixe">Nouveau préfixe</label>
-    <input type="text" id="prefixe" name="prefixe" maxlength="3" placeholder="Ex: 033" required>
-    <button type="submit">Ajouter</button>
-</form>
+    <?php if (session()->getFlashdata('errors')): ?>
+        <div class="alert alert-danger">
+            <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                <div><?= esc($error) ?></div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
-<table class="table-prefixes">
-    <thead>
-        <tr>
-            <th>Préfixe</th>
-            <th>Statut</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($prefixes as $p): ?>
-            <tr>
-                <td><?= esc($p['prefixe']) ?></td>
-                <td><?= $p['actif'] ? 'Actif' : 'Inactif' ?></td>
-                <td>
-                    <a href="/operateur/prefixes/toggle/<?= $p['id'] ?>">
-                        <?= $p['actif'] ? 'Désactiver' : 'Activer' ?>
-                    </a>
-                    <a href="/operateur/prefixes/delete/<?= $p['id'] ?>"
-                        onclick="return confirm('Confirmer la suppression ?')">
-                        Supprimer
-                    </a>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        <?php if (empty($prefixes)): ?>
-            <tr>
-                <td colspan="3">Aucun préfixe enregistré.</td>
-            </tr>
-        <?php endif; ?>
-    </tbody>
-</table>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form action="<?= base_url('operateur/prefixes/create') ?>" method="post" class="row g-3 align-items-end">
+                <?= csrf_field() ?>
+                <div class="col-md-8">
+                    <label for="prefixe" class="form-label">Nouveau prefixe</label>
+                    <input type="text" class="form-control" id="prefixe" name="prefixe" maxlength="3" placeholder="Ex: 033" required>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Prefixe</th>
+                        <th>Statut</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($prefixes as $p): ?>
+                        <tr>
+                            <td><?= esc($p['prefixe']) ?></td>
+                            <td>
+                                <span class="badge <?= $p['actif'] ? 'text-bg-success' : 'text-bg-secondary' ?>">
+                                    <?= $p['actif'] ? 'Actif' : 'Inactif' ?>
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="<?= base_url('operateur/prefixes/toggle/' . $p['id']) ?>">
+                                    <?= $p['actif'] ? 'Desactiver' : 'Activer' ?>
+                                </a>
+                                <a class="btn btn-sm btn-outline-danger" href="<?= base_url('operateur/prefixes/delete/' . $p['id']) ?>" onclick="return confirm('Confirmer la suppression ?')">
+                                    Supprimer
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <?php if (empty($prefixes)): ?>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Aucun prefixe enregistre.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

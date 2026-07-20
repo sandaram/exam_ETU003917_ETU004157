@@ -7,8 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+<?= view('partials/client_navbar') ?>
 <div class="container py-5">
-    <a href="<?= base_url('client/dashboard') ?>" class="btn btn-link px-0 mb-3">Retour</a>
     <div class="card shadow-sm p-4">
         <h3 class="mb-4">Historique des operations</h3>
 
@@ -18,7 +18,8 @@
                     <tr>
                         <th>Date</th>
                         <th>Operation</th>
-                        <th>Contact</th>
+                        <th>Sens</th>
+                        <th>Numero</th>
                         <th class="text-end">Montant</th>
                         <th class="text-end">Frais</th>
                         <th class="text-end">Solde apres</th>
@@ -27,20 +28,33 @@
                 <tbody>
                     <?php if (empty($operations)): ?>
                         <tr>
-                            <td colspan="6" class="text-center text-muted">Aucune operation.</td>
+                            <td colspan="7" class="text-center text-muted">Aucune operation.</td>
                         </tr>
                     <?php endif; ?>
 
                     <?php foreach ($operations as $operation): ?>
                         <?php
-                            $entrant = (int) ($operation['client_destinataire_id'] ?? 0) === $clientId;
-                            $libelle = $entrant ? 'TRANSFERT RECU' : $operation['type_operation'];
-                            $contact = $entrant ? $operation['numero_client'] : ($operation['numero_destinataire'] ?? '-');
+                            $estTransfert = $operation['type_operation'] === 'TRANSFERT';
+                            $entrant = $estTransfert && (int) ($operation['client_destinataire_id'] ?? 0) === $clientId;
+                            $sens = '-';
+                            $numero = '-';
+
+                            if ($estTransfert) {
+                                $sens = $entrant ? 'Recu de' : 'Envoye a';
+                                $numero = $entrant ? $operation['numero_client'] : ($operation['numero_destinataire'] ?? '-');
+                            }
                         ?>
                         <tr>
                             <td><?= esc($operation['date_operation']) ?></td>
-                            <td><?= esc($libelle) ?></td>
-                            <td><?= esc($contact) ?></td>
+                            <td><?= esc($operation['type_operation']) ?></td>
+                            <td>
+                                <?php if ($estTransfert): ?>
+                                    <span class="badge <?= $entrant ? 'text-bg-success' : 'text-bg-primary' ?>"><?= esc($sens) ?></span>
+                                <?php else: ?>
+                                    <?= esc($sens) ?>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= esc($numero) ?></td>
                             <td class="text-end"><?= number_format((float) $operation['montant'], 0, ',', ' ') ?> Ar</td>
                             <td class="text-end"><?= $entrant ? '-' : number_format((float) $operation['frais'], 0, ',', ' ') . ' Ar' ?></td>
                             <td class="text-end"><?= $entrant ? '-' : number_format((float) $operation['solde_apres'], 0, ',', ' ') . ' Ar' ?></td>
@@ -51,5 +65,6 @@
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
