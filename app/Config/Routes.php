@@ -14,3 +14,12 @@ $routes->group('operateur/prefixes', ['filter' => 'auth'], function ($routes) {
     $routes->get('toggle/(:num)', 'Prefixe::toggle/$1');
     $routes->get('delete/(:num)', 'Prefixe::delete/$1');
 });
+
+$routes->group('operateur/baremes', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'BaremeFrais::index');
+    $routes->get('create', 'BaremeFrais::createForm');
+    $routes->post('create', 'BaremeFrais::create');
+    $routes->get('edit/(:num)', 'BaremeFrais::editForm/$1');
+    $routes->post('update/(:num)', 'BaremeFrais::update/$1');
+    $routes->get('delete/(:num)', 'BaremeFrais::delete/$1');
+});
