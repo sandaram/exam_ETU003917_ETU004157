@@ -106,13 +106,13 @@
 
 ## 🧪 PHASE 4 : Recette, Merge & Livraison (11h45 - 13h00)
 
-- [ ] **4.1 Tests d'Intégration & Fusion**
+- [ *] **4.1 Tests d'Intégration & Fusion**
   - **Responsables :** Olivier & Sanda (0h45)
   - **Action :** Fusion des branches Git sur `main`, résolution de conflits, validation du parcours complet (Login ➔ Dépôt ➔ Transfert/Retrait ➔ Bilan Admin).
-- [ ] **4.2 Nettoyage & Documentation**
+- [* ] **4.2 Nettoyage & Documentation**
   - **Fichiers :** `base.sql`, `Taches.md`
   - **Responsables :** Olivier & Sanda (0h15)
   - **Action :** Export final d'une base propre et validation de la checklist `Taches.md`.
-- [ ] **4.3 Tag & Livraison Finale**
+- [* ] **4.3 Tag & Livraison Finale**
   - **Responsable :** Sanda (0h15)
   - **Action :** `git push origin main` et création du tag Git officiel (`git tag -a v1 -m "Livraison v1"`).
