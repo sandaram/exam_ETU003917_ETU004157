@@ -23,3 +23,8 @@ $routes->group('operateur/baremes', ['filter' => 'auth'], function ($routes) {
     $routes->post('update/(:num)', 'BaremeFrais::update/$1');
     $routes->get('delete/(:num)', 'BaremeFrais::delete/$1');
 });
+
+$routes->group('operateur/rapports', ['filter' => 'auth'], function ($routes) {
+    $routes->get('gains', 'Rapport::gains');
+    $routes->get('comptes', 'Rapport::comptesClients');
+});
