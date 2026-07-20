@@ -10,6 +10,7 @@
                 <li class="nav-item"><a class="nav-link" href="<?= base_url('operateur/baremes') ?>">Baremes</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= base_url('operateur/rapports/gains') ?>">Gains</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= base_url('operateur/rapports/comptes') ?>">Comptes clients</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= base_url('operateur/rapports/montants-a-envoyer') ?>">Autres operateurs</a></li>
             </ul>
             <span class="navbar-text me-3"><?= esc(session()->get('operateur_nom') ?? 'operateur') ?></span>
             <a class="btn btn-outline-light btn-sm" href="<?= base_url('operateur/logout') ?>">Deconnexion</a>

@@ -26,7 +26,15 @@
             <div class="mb-3">
                 <label for="montant" class="form-label">Montant</label>
                 <input type="number" min="1" step="1" class="form-control" id="montant" name="montant" value="<?= old('montant') ?>" required>
-                <div class="form-text">Le destinataire est cree automatiquement si son prefixe est valide.</div>
+                <div class="form-text">Si le prefixe est interne, le destinataire est cree automatiquement. Si le prefixe est externe, le transfert est comptabilise pour l'autre operateur.</div>
+            </div>
+            <div class="mb-4">
+                <label for="mode_transfert" class="form-label">Cas de transfert externe</label>
+                <select class="form-select" id="mode_transfert" name="mode_transfert">
+                    <option value="externe_intermediaire" <?= old('mode_transfert') === 'externe_intermediaire' ? 'selected' : '' ?>>Via notre operateur : montant + frais + commission</option>
+                    <option value="externe_direct" <?= old('mode_transfert') === 'externe_direct' ? 'selected' : '' ?>>Direct vers l'autre operateur : montant + commission</option>
+                </select>
+                <div class="form-text">Ce choix est ignore pour un transfert interne.</div>
             </div>
             <button type="submit" class="btn btn-primary w-100">Envoyer</button>
         </form>

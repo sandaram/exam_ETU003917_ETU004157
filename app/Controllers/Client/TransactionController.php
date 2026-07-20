@@ -56,12 +56,13 @@ class TransactionController extends BaseController
 
         $telephone = trim($this->request->getPost('telephone_destinataire') ?? '');
         $montant = (float) $this->request->getPost('montant');
+        $modeTransfert = $this->request->getPost('mode_transfert') ?? 'externe_intermediaire';
 
         if ($telephone === '') {
             return redirect()->back()->withInput()->with('error', 'Veuillez saisir le numero destinataire.');
         }
 
-        $result = $this->transactionModel->transferer((int) session()->get('client_id'), $telephone, $montant);
+        $result = $this->transactionModel->transferer((int) session()->get('client_id'), $telephone, $montant, $modeTransfert);
 
         if (!$result['success']) {
             return redirect()->back()->withInput()->with('error', $result['message']);

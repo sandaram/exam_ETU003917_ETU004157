@@ -3,14 +3,17 @@
 namespace App\Controllers;
 
 use App\Models\RapportModel;
+use App\Models\TransactionModel;
 
 class Rapport extends BaseController
 {
     protected RapportModel $rapportModel;
+    protected TransactionModel $transactionModel;
 
     public function __construct()
     {
         $this->rapportModel = new RapportModel();
+        $this->transactionModel = new TransactionModel();
     }
 
     public function gains()
@@ -28,5 +31,12 @@ class Rapport extends BaseController
         $data['nombreClients']  = $this->rapportModel->nombreClients();
 
         return view('operateur/rapport_comptes', $data);
+    }
+
+    public function montantsAEnvoyer()
+    {
+        return view('operateur/montants_a_envoyer', [
+            'lignes' => $this->transactionModel->situationMontantsAEnvoyer(),
+        ]);
     }
 }

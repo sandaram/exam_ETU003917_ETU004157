@@ -59,6 +59,7 @@ $routes->group('operateur/baremes', ['filter' => 'operateurAuth'], function ($ro
 $routes->group('operateur/rapports', ['filter' => 'operateurAuth'], function ($routes) {
     $routes->get('gains', 'Rapport::gains');
     $routes->get('comptes', 'Rapport::comptesClients');
+    $routes->get('montants-a-envoyer', 'Rapport::montantsAEnvoyer');
 });
 
 $routes->group('admin/prefixes', function ($routes) {

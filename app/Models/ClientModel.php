@@ -24,6 +24,7 @@ class ClientModel extends Model
         $builder = $db->table('prefixes_operateur');
         
         $result = $builder->where('prefixe', $prefixeSaisi)
+                          ->where('operateur_id', null)
                           ->where('actif', 1)
                           ->get()
                           ->getRow();

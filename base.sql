@@ -6,10 +6,18 @@
 -- 1. TABLES
 -- ---------------------------------------------------------
 
+CREATE TABLE operateurs (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom             VARCHAR(50) NOT NULL UNIQUE,
+    commission_pct  NUMERIC(5,2) NOT NULL DEFAULT 0,
+    actif           INTEGER NOT NULL DEFAULT 1
+);
+
 CREATE TABLE prefixes_operateur (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     prefixe         VARCHAR(3) NOT NULL UNIQUE,
-    actif           INTEGER NOT NULL DEFAULT 1
+    actif           INTEGER NOT NULL DEFAULT 1,
+    operateur_id    INTEGER REFERENCES operateurs(id) NULL
 );
 
 CREATE TABLE types_operation (
@@ -42,7 +50,11 @@ CREATE TABLE operations (
     montant                 NUMERIC(14,2) NOT NULL,
     frais                   NUMERIC(12,2) NOT NULL DEFAULT 0,
     solde_apres              NUMERIC(14,2) NOT NULL,
-    date_operation           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    date_operation           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    mode_transfert           VARCHAR(30) NOT NULL DEFAULT 'interne',
+    operateur_destinataire_id INTEGER REFERENCES operateurs(id) NULL,
+    numero_destinataire_externe VARCHAR(15) NULL,
+    commission               NUMERIC(12,2) NOT NULL DEFAULT 0
 );
 
 CREATE TABLE administrateurs (
@@ -99,6 +111,14 @@ ORDER BY o.date_operation DESC;
 INSERT INTO prefixes_operateur (prefixe) VALUES
 ('033'),
 ('037');
+
+INSERT INTO operateurs (nom, commission_pct) VALUES
+('Operateur A', 2.50),
+('Operateur B', 3.00);
+
+INSERT INTO prefixes_operateur (prefixe, actif, operateur_id) VALUES
+('032', 1, (SELECT id FROM operateurs WHERE nom = 'Operateur A')),
+('031', 1, (SELECT id FROM operateurs WHERE nom = 'Operateur B'));
 
 INSERT INTO types_operation (code, libelle) VALUES
 ('DEPOT', 'Dépôt'),

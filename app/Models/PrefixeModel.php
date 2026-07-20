@@ -8,7 +8,7 @@ class PrefixeModel extends Model
 {
     protected $table            = 'prefixes_operateur';
     protected $primaryKey       = 'id';
-    protected $allowedFields    = ['prefixe', 'actif'];
+    protected $allowedFields    = ['prefixe', 'actif', 'operateur_id'];
     protected $useTimestamps    = false;
     protected $returnType       = 'array';
 
@@ -32,7 +32,10 @@ class PrefixeModel extends Model
     // Liste tous les préfixes
     public function listAll(): array
     {
-        return $this->findAll();
+        return $this->select('prefixes_operateur.*, operateurs.nom AS operateur_nom')
+            ->join('operateurs', 'operateurs.id = prefixes_operateur.operateur_id', 'left')
+            ->orderBy('prefixe', 'ASC')
+            ->findAll();
     }
 
     // Récupère uniquement les préfixes actifs
@@ -45,8 +48,9 @@ class PrefixeModel extends Model
     public function createPrefixe(string $prefixe): bool
     {
         return (bool) $this->save([
-            'prefixe' => $prefixe,
-            'actif'   => 1,
+            'prefixe'      => $prefixe,
+            'actif'        => 1,
+            'operateur_id' => null,
         ]);
     }
 
@@ -84,6 +88,12 @@ class PrefixeModel extends Model
         $prefixe = substr($numeroTelephone, 0, 3);
         return $this->where('prefixe', $prefixe)
             ->where('actif', 1)
+            ->where('operateur_id', null)
             ->first() !== null;
+    }
+
+    public function estReseauPropre(string $numeroTelephone): bool
+    {
+        return $this->isPrefixeValide($numeroTelephone);
     }
 }

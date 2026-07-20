@@ -55,6 +55,7 @@
                 <thead>
                     <tr>
                         <th>Prefixe</th>
+                        <th>Reseau</th>
                         <th>Statut</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -63,6 +64,7 @@
                     <?php foreach ($prefixes as $p): ?>
                         <tr>
                             <td><?= esc($p['prefixe']) ?></td>
+                            <td><?= esc($p['operateur_nom'] ?? 'Interne') ?></td>
                             <td>
                                 <span class="badge <?= $p['actif'] ? 'text-bg-success' : 'text-bg-secondary' ?>">
                                     <?= $p['actif'] ? 'Actif' : 'Inactif' ?>
@@ -80,7 +82,7 @@
                     <?php endforeach; ?>
                     <?php if (empty($prefixes)): ?>
                         <tr>
-                            <td colspan="3" class="text-center text-muted">Aucun prefixe enregistre.</td>
+                            <td colspan="4" class="text-center text-muted">Aucun prefixe enregistre.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

@@ -36,11 +36,15 @@
                     <?php foreach ($operations as $operation): ?>
                         <?php
                             $estTransfert = $operation['type_operation'] === 'TRANSFERT';
+                            $estExterne = $estTransfert && (($operation['mode_transfert'] ?? 'interne') !== 'interne');
                             $entrant = $estTransfert && (int) ($operation['client_destinataire_id'] ?? 0) === $clientId;
                             $sens = '-';
                             $numero = '-';
 
-                            if ($estTransfert) {
+                            if ($estExterne) {
+                                $sens = ($operation['mode_transfert'] ?? '') === 'externe_direct' ? 'Externe direct' : 'Via operateur';
+                                $numero = ($operation['numero_destinataire_externe'] ?? '-') . ' - ' . ($operation['operateur_externe'] ?? 'Operateur externe');
+                            } elseif ($estTransfert) {
                                 $sens = $entrant ? 'Recu de' : 'Envoye a';
                                 $numero = $entrant ? $operation['numero_client'] : ($operation['numero_destinataire'] ?? '-');
                             }
@@ -57,7 +61,7 @@
                             </td>
                             <td><?= esc($numero) ?></td>
                             <td class="text-end"><?= number_format((float) $operation['montant'], 0, ',', ' ') ?> Ar</td>
-                            <td class="text-end"><?= $entrant ? '-' : number_format((float) $operation['frais'], 0, ',', ' ') . ' Ar' ?></td>
+                            <td class="text-end"><?= $entrant ? '-' : number_format((float) $operation['frais'] + (float) ($operation['commission'] ?? 0), 0, ',', ' ') . ' Ar' ?></td>
                             <td class="text-end"><?= $entrant ? '-' : number_format((float) $operation['solde_apres'], 0, ',', ' ') . ' Ar' ?></td>
                         </tr>
                     <?php endforeach; ?>
