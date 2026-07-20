@@ -1,5 +1,6 @@
 # 📋 Todo List & Checklist - Projet Mobile Money (S4 Info & Design)
 **Créneau Livraison 1 :** Lundi (08h00 - 13h00) | **Tag Git :** `v1`
+**Créneau Livraison 2 :** Lundi (13h00 - 17h10) | **Tag Git :** `v2`
 
 ---
 
@@ -104,7 +105,7 @@
 
 ---
 
-## 🧪 PHASE 4 : Recette, Merge & Livraison (11h45 - 13h00)
+## 🧪 PHASE 4 : Recette, Merge & Livraison v1 (11h45 - 13h00)
 
 - [x] **4.1 Tests d'Intégration & Fusion**
   - **Responsables :** Olivier & Sanda (0h45)
@@ -113,6 +114,114 @@
   - **Fichiers :** `base.sql`, `Taches.md`
   - **Responsables :** Olivier & Sanda (0h15)
   - **Action :** Export final d'une base propre et validation de la checklist `Taches.md`.
-- [ ] **4.3 Tag & Livraison Finale**
+- [x] **4.3 Tag & Livraison Finale v1**
   - **Responsable :** Sanda (0h15)
   - **Action :** `git push origin main` et création du tag Git officiel (`git tag -a v1 -m "Livraison v1"`).
+
+---
+
+## 🛠️ PHASE 5 : Côté Opérateur — Interconnexion (Olivier) — (13h00 - 15h15)
+
+> **Modèle retenu (ajusté) :** un seul opérateur géré dans l'app (le vôtre, avec login admin). Les autres opérateurs sont juste une **liste de référence** (`operateurs` : nom + commission), sans compte ni login. Un préfixe avec `operateur_id = NULL` est interne ; rempli, il est externe et rattaché à un opérateur concurrent. Deux scénarios de transfert externe à distinguer via `operations.mode_transfert` :
+> - `externe_intermediaire` → montant à envoyer = `montant + frais + commission`
+> - `externe_direct` → montant à envoyer = `montant + commission` (pas de frais, votre opérateur n'intervient pas dans l'acheminement)
+
+### 🏢 5.0 Table `operateurs` + rattachement des préfixes externes (0h25)
+- [ ] **[Base/SQL]** `ajout_operateurs.sql` (script incrémental, à fusionner dans `base.sql` en fin de journée)
+  - `CREATE TABLE operateurs (id, nom, commission_pct, actif)` — pas de flag `est_propre`.
+  - `ALTER TABLE prefixes_operateur ADD COLUMN operateur_id NULL` (NULL = préfixe interne).
+  - Insertion des préfixes concurrents (ex: 032, 031) rattachés à leur opérateur.
+  - `ALTER TABLE operations ADD COLUMN mode_transfert, operateur_destinataire_id, numero_destinataire_externe, commission`.
+- [ ] **[Base/Modèle]** `app/Models/OperateurModel.php`
+  - CRUD simple (`listAll`, `createOperateur`, `updateCommission`, `deleteOperateur`).
+  - Logique métier : `trouverOperateurParNumero()`, `calculerCommission()`.
+
+### 🌐 5.1 Détection réseau interne / externe (0h20)
+- [ ] **[Base/Modèle]** `app/Models/PrefixeModel.php` (mis à jour)
+  - `allowedFields` étendu avec `operateur_id`.
+  - `createPrefixe()` / `updatePrefixe()` acceptent un `operateurId` optionnel (`NULL` = interne).
+  - `listAll()` fait la jointure avec `operateurs` (nom du réseau, ou "Interne" si `operateur_id` est `NULL`).
+  - Nouvelle méthode `estReseauPropre(string $numero): bool` → `true` si `operateur_id IS NULL`.
+- [ ] **[Intégration]** `app/Controllers/Admin/PrefixeController.php`
+  - Étendre `add()` pour accepter un `operateur_id` optionnel (select "Interne" ou un opérateur externe).
+- [ ] **[Affichage]** `app/Views/admin/prefixes/index.php`
+  - Colonne "Réseau" (Interne / nom de l'opérateur externe).
+
+### 💰 5.2 Gestion de la liste des opérateurs (0h25)
+- [ ] **[Intégration]** `app/Controllers/Admin/OperateurController.php`
+  - Méthodes : `index()`, `create()`, `updateCommission($id)`, `delete($id)`.
+  - **Routes :** `GET /admin/operateurs`, `POST /admin/operateurs/create`, `POST /admin/operateurs/commission/(:num)`, `GET /admin/operateurs/delete/(:num)`
+- [ ] **[Affichage]** `app/Views/admin/operateurs/index.php`
+  - Formulaire d'ajout d'un opérateur (nom + commission) + tableau avec commission éditable par ligne. Aucune notion de login à prévoir ici.
+
+### 📤 5.3 Rapport : montants à envoyer à chaque opérateur (0h40)
+- [ ] **[Base/Modèle]** `app/Models/TransactionModel.php`
+  - Méthode `calculerMontantAEnvoyer(string $modeTransfert, float $montant, float $frais, float $commission): float` — applique la formule du bon scénario.
+  - Méthode `situationMontantsAEnvoyer(): array` — Query Builder en PHP, groupé par opérateur ET par scénario (`mode_transfert`). **Pas de modification de `base.sql`** pour cette requête, pour limiter les conflits avec Sanda.
+- [ ] **[Intégration]** `app/Controllers/Admin/RapportController.php`
+  - Méthode `montantsAEnvoyer()`.
+  - **Route :** `GET /admin/rapports/montants-a-envoyer`
+- [ ] **[Affichage]** `app/Views/admin/rapports/montants_a_envoyer.php`
+  - Tableau : opérateur / scénario (via intermédiaire ou direct) / nb opérations / montant / frais / commission / total à envoyer.
+
+---
+
+## 📱 PHASE 6 : Côté Client — Options d'envoi (Sanda) — (13h00 - 15h30)
+
+> ⚠️ **Dépendance avec Olivier** : cette phase utilise `PrefixeModel::estReseauPropre()` et `OperateurModel` (`trouverOperateurParNumero()`, `calculerCommission()`) créés en Phase 5.0/5.1. **Faire un `git pull` avant de commencer**, pour ne pas dupliquer cette logique côté client.
+
+### 🌍 6.1 Détection et calcul lors d'un transfert externe (0h40)
+- [ ] **[Fonction/Logique]** `app/Models/TransactionModel.php`
+  - Dans le flux de transfert : appeler `PrefixeModel::estReseauPropre($numeroDestinataire)`.
+    - Si `true` → transfert interne classique (barème normal, `mode_transfert = 'interne'`, comme en v1).
+    - Si `false` → transfert externe : appeler `OperateurModel::trouverOperateurParNumero()` puis `calculerCommission()`.
+  - Case à cocher côté formulaire pour préciser le scénario : **via intermédiaire** ou **direct**.
+    - Via intermédiaire → `frais` = barème normal (comme un transfert classique) + `commission` calculée.
+    - Direct → `frais = 0` (votre opérateur n'intervient pas) + `commission` calculée.
+  - Enregistrer `mode_transfert`, `operateur_destinataire_id`, `numero_destinataire_externe`, `commission` dans `operations`.
+- [ ] **[Intégration]** `app/Controllers/Client/TransactionController.php`
+  - Adapter `processTransfert()` pour lire le numéro destinataire, détecter interne/externe, et le scénario choisi (`$this->request->getPost('via_intermediaire')`).
+  - Vérifier le solde suffisant : `solde >= montant + frais + commission` (peu importe le scénario).
+- [ ] **[Affichage]** `app/Views/client/transfert.php`
+  - Détection automatique à l'affichage : si le numéro saisi correspond à un préfixe externe, afficher les options "Via intermédiaire" / "Direct" (radio ou select) + aperçu du montant total débité (montant + frais + commission selon le choix).
+
+### 💸 6.2 Frais à la charge de l'expéditeur (transferts internes) (0h25)
+- [ ] **[Fonction/Logique]** `app/Models/TransactionModel.php`
+  - Option `inclureFrais` (bool) pour les transferts **internes** uniquement : si activé, les frais sont ajoutés au débit de l'expéditeur au lieu d'être déduits du montant reçu par le destinataire.
+- [ ] **[Intégration]** `app/Controllers/Client/TransactionController.php`
+  - Lire `$this->request->getPost('inclure_frais')` et ajuster le calcul du débit/crédit en conséquence.
+- [ ] **[Affichage]** `app/Views/client/transfert.php`
+  - Case à cocher "Inclure les frais de retrait lors de l'envoi" (visible uniquement pour un transfert interne).
+
+### 👥 6.3 Envoi multiple vers plusieurs numéros (0h55)
+- [ ] **[Fonction/Logique]** `app/Models/TransactionModel.php`
+  - Méthode `transfertMultiple(array $numeros, float $montantTotal, ?bool $viaIntermediaire = null): array` — divise `$montantTotal` par le nombre de destinataires puis exécute un transfert par numéro (chacun peut être interne ou externe, détecté indépendamment via `estReseauPropre()`).
+- [ ] **[Intégration]** `app/Controllers/Client/TransactionController.php`
+  - Méthode `processTransfertMultiple()`.
+  - **Route :** `POST /client/transfert/multiple`
+- [ ] **[Affichage]** `app/Views/client/transfert.php`
+  - Champ dynamique pour ajouter plusieurs numéros destinataires + aperçu du montant réparti (et du scénario détecté) par numéro.
+
+---
+
+## 🧪 PHASE 7 : Recette, Merge & Livraison v2 (15h30 - 17h10)
+
+- [ ] **7.1 Fusion de `ajout_operateurs.sql` dans `base.sql`**
+  - **Responsable :** Olivier (0h15)
+  - **Action :** Intégrer le script incrémental dans le `base.sql` principal (nouvelle section "Livraison 2"), pour que la base soit reconstructible en un seul script depuis zéro.
+- [ ] **7.2 Tests d'Intégration & Fusion**
+  - **Responsables :** Olivier & Sanda (0h35)
+  - **Action :** Fusion des branches Git sur `main`, résolution de conflits, validation du parcours complet : transfert interne, transfert externe via intermédiaire, transfert externe direct, envoi multiple, rapport des montants à envoyer.
+- [ ] **7.3 Nettoyage & Documentation**
+  - **Fichiers :** `base.sql`, `Taches.md`
+  - **Responsables :** Olivier & Sanda (0h10)
+  - **Action :** Export final d'une base propre et validation de la checklist `Taches.md`.
+- [ ] **7.4 Tag & Livraison Finale v2**
+  - **Responsable :** Sanda (0h15)
+  - **Action :** `git push origin main` et création du tag Git officiel (`git tag -a v2 -m "Livraison v2"`).
+
+---
+
+## ⚠️ Point de vigilance avant la v2
+
+Le sujet évoque des routes `/operateur/*` dans certains échanges récents (contrôleurs `App\Controllers\Operateur\...`), alors que ce `Taches.md` documente `/admin/*` (`App\Controllers\Admin\...`) depuis la v1. **Choisissez une seule convention avec votre binôme avant de continuer**, sinon vous aurez des routes qui pointent vers des contrôleurs inexistants (comme le 404 rencontré sur `/operateur/login`).
