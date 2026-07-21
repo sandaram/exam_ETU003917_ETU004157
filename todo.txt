@@ -1,0 +1,3 @@
+chaque client a son epargne 
+et on cree une page d'insertion de pourcentage d'epargne (ex:50%)
+dans son solde si un transfert est arrive(50% reste et 50% epargne) 

@@ -21,7 +21,18 @@ class DashboardController extends BaseController
         // Transmettre le solde à la vue dashboard.php
         return view('client/dashboard', [
             'solde' => $client['solde'] ?? 0
+            'soldeEpargne' => $client['solde_epargne'] ?? 0
+            'epargnePourcentage' => $client['epargne_pourcentage'] ?? 0
         ]);
+    }
+    public function processEpargne(){
+        if (!session()->has('client_id')) {
+            return redirect()->to('/client/login');
+        }
+        $pourcentage=(float)$this->request->getPost(epargne_pourcentage);
+        //$clientModel=new ClientModel();
+        //if(!$clientModel->mettre)
+        return redirect()->to('/client/epargne')->with('success','epargne mise à jour');
     }
 
     public function depotForm()

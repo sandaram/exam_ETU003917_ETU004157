@@ -24,6 +24,8 @@ $routes->group('client', ['namespace' => 'App\Controllers\Client'], static funct
     $routes->get('dashboard', 'DashboardController::index');
     $routes->get('depot', 'DashboardController::depotForm');
     $routes->post('depot', 'DashboardController::processDepot');
+    $routes->get('epargne', 'DashboardController::depotForm');
+    $routes->post('epargne', 'DashboardController::processEpargne');
 
     // 3. Transactions & Historique
     $routes->get('retrait', 'TransactionController::retraitForm');

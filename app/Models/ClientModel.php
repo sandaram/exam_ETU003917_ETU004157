@@ -10,7 +10,7 @@ class ClientModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $allowedFields    = ['numero_telephone', 'solde', 'date_creation'];
+    protected $allowedFields    = ['numero_telephone', 'solde', 'solde_epargne', 'epargne_pourcentage', 'date_creation'];
 
     /**
      * Vérifie si le préfixe du numéro est autorisé par l'opérateur
@@ -30,6 +30,10 @@ class ClientModel extends Model
                           ->getRow();
 
         return $result !== null;
+    }
+    public function mettreAJourEpargne(int $clientId,float $pourcentage): bool
+    {
+        return $this-> update($clientId,[ 'epargne_pourcentage'=> $pourcentage ]);
     }
 
     /**

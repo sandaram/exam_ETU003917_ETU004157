@@ -43,6 +43,12 @@ class RapportModel extends Model
 
         return array_merge($fraisOperateur, $commissionsAutres);
     }
+   // public function totalSoldeClients(): float
+    //{
+      //  $result=$this->db->table('vue_situation_comptes_clients')
+        //->selectSum('solde')
+        //->select()
+    //}
 
     // Total général des frais perçus, toutes opérations confondues
     public function totalGains(): float
