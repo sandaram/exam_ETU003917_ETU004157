@@ -33,39 +33,53 @@ $routes->group('client', ['namespace' => 'App\Controllers\Client'], static funct
     $routes->get('historique', 'TransactionController::historique');
 });
 
+/*
+ ====================================================================
+ 🔧 ROUTE GROUPE : OPERATEUR
+ ====================================================================
+ */
 $routes->group('operateur', ['namespace' => 'App\Controllers\Operateur'], static function ($routes) {
+    // Routes publiques (authentification)
     $routes->get('login', 'AuthController::login');
     $routes->post('login', 'AuthController::processLogin');
     $routes->get('logout', 'AuthController::logout');
 });
 
-$routes->group('operateur/prefixes', ['filter' => 'operateurAuth'], function ($routes) {
-    $routes->get('/', 'Prefixe::index');
-    $routes->post('create', 'Prefixe::create');
-    $routes->get('edit/(:num)', 'Prefixe::editForm/$1');
-    $routes->post('update/(:num)', 'Prefixe::update/$1');
-    $routes->get('toggle/(:num)', 'Prefixe::toggle/$1');
-    $routes->get('delete/(:num)', 'Prefixe::delete/$1');
-});
+// Routes protégées de l'opérateur
+$routes->group('operateur', ['namespace' => 'App\Controllers\Operateur', 'filter' => 'operateurAuth'], static function ($routes) {
+    
+    // Gestion des préfixes
+    $routes->group('prefixes', function ($routes) {
+        $routes->get('/', 'Prefixe::index');
+        $routes->post('create', 'Prefixe::create');
+        $routes->get('edit/(:num)', 'Prefixe::editForm/$1');
+        $routes->post('update/(:num)', 'Prefixe::update/$1');
+        $routes->get('toggle/(:num)', 'Prefixe::toggle/$1');
+        $routes->get('delete/(:num)', 'Prefixe::delete/$1');
+    });
 
-$routes->group('operateur/baremes', ['filter' => 'operateurAuth'], function ($routes) {
-    $routes->get('/', 'BaremeFrais::index');
-    $routes->get('create', 'BaremeFrais::createForm');
-    $routes->post('create', 'BaremeFrais::create');
-    $routes->get('edit/(:num)', 'BaremeFrais::editForm/$1');
-    $routes->post('update/(:num)', 'BaremeFrais::update/$1');
-    $routes->get('delete/(:num)', 'BaremeFrais::delete/$1');
-});
+    // Gestion des barèmes de frais
+    $routes->group('baremes', function ($routes) {
+        $routes->get('/', 'BaremeFrais::index');
+        $routes->get('create', 'BaremeFrais::createForm');
+        $routes->post('create', 'BaremeFrais::create');
+        $routes->get('edit/(:num)', 'BaremeFrais::editForm/$1');
+        $routes->post('update/(:num)', 'BaremeFrais::update/$1');
+        $routes->get('delete/(:num)', 'BaremeFrais::delete/$1');
+    });
 
-$routes->group('operateur/operateurs', ['filter' => 'operateurAuth'], function ($routes) {
-    $routes->get('/', 'Operateur::index');
-    $routes->post('update/(:num)', 'Operateur::update/$1');
-});
+    // Gestion des opérateurs
+    $routes->group('operateurs', function ($routes) {
+        $routes->get('/', 'Operateur::index');
+        $routes->post('update/(:num)', 'Operateur::update/$1');
+    });
 
-$routes->group('operateur/rapports', ['filter' => 'operateurAuth'], function ($routes) {
-    $routes->get('gains', 'Rapport::gains');
-    $routes->get('comptes', 'Rapport::comptesClients');
-    $routes->get('montants-a-envoyer', 'Rapport::montantsAEnvoyer');
+    // Rapports et statistiques
+    $routes->group('rapports', function ($routes) {
+        $routes->get('gains', 'Rapport::gains');
+        $routes->get('comptes', 'Rapport::comptesClients');
+        $routes->get('montants-a-envoyer', 'Rapport::montantsAEnvoyer');
+    });
 });
 
 $routes->group('admin/prefixes', function ($routes) {

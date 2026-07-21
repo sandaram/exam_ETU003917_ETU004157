@@ -26,6 +26,27 @@
         <div class="alert alert-danger"><?= esc(session()->getFlashdata('error')) ?></div>
     <?php endif; ?>
 
+    <!-- Récapitulatif global -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 bg-primary bg-opacity-10">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total global - Tous les clients</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1"><strong><?= (int) $totalGlobal['nb_operations_total'] ?></strong> opérations</p>
+                            <p class="mb-0 text-muted small">Transferts traités</p>
+                        </div>
+                        <div class="text-end">
+                            <p class="mb-1 h5"><strong><?= number_format((float) $totalGlobal['total_commission_global'], 2, ',', ' ') ?></strong> F</p>
+                            <p class="mb-0 text-muted small">Commissions gagnées</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
             <table class="table table-striped align-middle mb-0" data-table-tools>
@@ -33,6 +54,8 @@
                     <tr>
                         <th>Nom</th>
                         <th class="text-end">Commission</th>
+                        <th class="text-end">Opérations</th>
+                        <th class="text-end">Total commissions</th>
                         <th>Statut</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -52,6 +75,12 @@
                                     <span class="input-group-text">%</span>
                                 </div>
                             </td>
+                            <td class="text-end" data-sort-value="<?= $operateur['nb_operations'] ?>">
+                                <span class="badge bg-info"><?= $operateur['nb_operations'] ?></span>
+                            </td>
+                            <td class="text-end" data-sort-value="<?= $operateur['total_commission'] ?>">
+                                <strong><?= number_format((float) $operateur['total_commission'], 2, ',', ' ') ?></strong> F
+                            </td>
                             <td>
                                 <div class="form-check form-switch m-0">
                                     <input form="operateur-<?= esc($operateur['id']) ?>" class="form-check-input" type="checkbox" role="switch" name="actif" value="1" <?= $operateur['actif'] ? 'checked' : '' ?>>
@@ -65,7 +94,7 @@
                     <?php endforeach; ?>
                     <?php if (empty($operateurs)): ?>
                         <tr>
-                            <td colspan="4" class="text-center text-muted">Aucun operateur configure.</td>
+                            <td colspan="6" class="text-center text-muted">Aucun operateur configure.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

@@ -36,7 +36,7 @@
                     <?php foreach ($lignes as $ligne): ?>
                         <?php
                             $scenario = match ($ligne['mode_transfert']) {
-                                'interne', 'externe_direct' => 'Même operateur',
+                                'interne' => 'Même operateur',
                                 default => 'Autre operateur',
                             };
                         ?>

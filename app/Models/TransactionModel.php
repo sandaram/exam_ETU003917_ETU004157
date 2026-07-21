@@ -318,14 +318,21 @@ class TransactionModel extends Model
     {
         $rows = $this->db->table('operations o')
             ->select(
-                'op.nom AS operateur, o.mode_transfert, COUNT(o.id) AS nombre_operations, ' .
-                'SUM(o.montant) AS total_montant, SUM(o.frais) AS total_frais, SUM(o.commission) AS total_commission'
+                'op.id, op.nom AS operateur, ' .
+                'COUNT(o.id) AS nombre_operations, ' .
+                'SUM(o.montant) AS total_montant, ' .
+                'SUM(CASE WHEN o.mode_transfert = \'interne\' THEN o.frais ELSE 0 END) AS total_frais, ' .
+                'SUM(CASE WHEN o.mode_transfert != \'interne\' THEN o.commission ELSE 0 END) AS total_commission, ' .
+                'CASE ' .
+                    "WHEN COUNT(CASE WHEN o.mode_transfert = 'interne' THEN 1 END) > 0 " .
+                    "THEN 'interne' " .
+                    "ELSE 'autre_operateur' " .
+                'END AS mode_transfert'
             )
             ->join('operateurs op', 'op.id = o.operateur_destinataire_id')
-            ->whereIn('o.mode_transfert', ['autre_operateur', 'externe_intermediaire', 'externe_direct'])
-            ->groupBy('op.nom, o.mode_transfert')
+            ->whereIn('o.mode_transfert', ['autre_operateur', 'externe_intermediaire', 'externe_direct', 'interne'])
+            ->groupBy('o.operateur_destinataire_id, op.nom, op.id')
             ->orderBy('op.nom', 'ASC')
-            ->orderBy('o.mode_transfert', 'ASC')
             ->get()
             ->getResultArray();
 

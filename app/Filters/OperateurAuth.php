@@ -10,7 +10,7 @@ class OperateurAuth implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        if (!session()->has('operateur_connecte')) {
+        if (!session()->has('isOperateurLoggedIn')) {
             return redirect()->to('/operateur/login')->with('error', 'Veuillez vous connecter comme operateur.');
         }
     }

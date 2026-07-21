@@ -7,48 +7,56 @@ use App\Models\AdministrateurModel;
 
 class AuthController extends BaseController
 {
+    // GET /operateur/login -> Affiche la page de connexion
     public function login()
     {
-        if (session()->has('operateur_connecte')) {
+        // Si déjà connecté, rediriger directement vers le tableau de bord opérateur
+        if (session()->has('operateur_id')) {
             return redirect()->to('/operateur/prefixes');
         }
 
         return view('operateur/login', [
-            'identifiantDemo' => 'admin',
-            'motDePasseDemo'  => 'admin123',
+            'identifiantDemo'  => 'operateur_demo',
+            'motDePasseDemo'   => 'password123',
         ]);
     }
 
+    // POST /operateur/login -> Traite la tentative de connexion
     public function processLogin()
     {
-        $identifiant = trim($this->request->getPost('identifiant') ?? '');
-        $motDePasse = trim($this->request->getPost('mot_de_passe') ?? '');
+        $identifiant = trim((string) $this->request->getPost('identifiant'));
+        $motDePasse  = (string) $this->request->getPost('mot_de_passe');
 
-        if ($identifiant === '' || $motDePasse === '') {
-            return redirect()->back()->withInput()->with('error', 'Veuillez saisir vos identifiants.');
+        if (empty($identifiant) || empty($motDePasse)) {
+            return redirect()->back()->withInput()->with('error', 'Veuillez remplir tous les champs.');
         }
 
-        $administrateurModel = new AdministrateurModel();
-        $administrateur = $administrateurModel->verifierIdentifiants($identifiant, $motDePasse);
+        $adminModel = new AdministrateurModel();
+        $utilisateur = $adminModel->verifierIdentifiants($identifiant, $motDePasse);
 
-        if (!$administrateur) {
-            return redirect()->back()->withInput()->with('error', 'Identifiants operateur incorrects.');
+        if (!$utilisateur) {
+            return redirect()->back()->withInput()->with('error', 'Identifiant ou mot de passe incorrect.');
+        }
+
+        // On s'assure que le compte a bien le rôle "operateur"
+        // -> Adapter la valeur ci-dessous si le rôle stocké en base porte un autre nom
+        if (($utilisateur['role'] ?? null) !== 'operateur') {
+            return redirect()->back()->withInput()->with('error', 'Ce compte n\'est pas autorisé à se connecter ici.');
         }
 
         session()->set([
-            'operateur_connecte' => true,
-            'operateur_id'       => $administrateur['id'],
-            'operateur_nom'      => $administrateur['nom_utilisateur'],
-            'operateur_role'     => $administrateur['role'],
+            'operateur_id'          => $utilisateur['id'],
+            'operateur_nom'         => $utilisateur['nom_utilisateur'],
+            'isOperateurLoggedIn'   => true,
         ]);
 
-        return redirect()->to('/operateur/prefixes')->with('success', 'Connexion operateur reussie.');
+        return redirect()->to('/operateur/prefixes');
     }
 
+    // GET /operateur/logout -> Déconnexion
     public function logout()
     {
-        session()->remove(['operateur_connecte', 'operateur_id', 'operateur_nom', 'operateur_role']);
-
+        session()->remove(['operateur_id', 'operateur_nom', 'isOperateurLoggedIn']);
         return redirect()->to('/operateur/login');
     }
 }

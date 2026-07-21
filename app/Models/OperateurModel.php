@@ -60,4 +60,41 @@ class OperateurModel extends Model
     {
         return round($montant * ((float) ($operateur['commission_pct'] ?? 0) / 100), 2);
     }
+
+    /**
+     * Récupère tous les opérateurs avec leurs statistiques de commissions et d'opérations
+     */
+    public function listAllWithStats(): array
+    {
+        $operateurs = $this->listAll();
+        
+        foreach ($operateurs as &$operateur) {
+            $stats = $this->db->table('operations o')
+                ->select('COUNT(o.id) AS nb_operations, SUM(o.commission) AS total_commission')
+                ->where('o.operateur_destinataire_id', $operateur['id'])
+                ->where('o.commission >', 0)
+                ->get()
+                ->getRowArray();
+            
+            $operateur['nb_operations'] = (int) ($stats['nb_operations'] ?? 0);
+            $operateur['total_commission'] = (float) ($stats['total_commission'] ?? 0);
+        }
+        
+        return $operateurs;
+    }
+
+    /**
+     * Récupère le total global pour tous les clients (toutes les commissions)
+     */
+    public function getTotalGlobal(): array
+    {
+        return $this->db->table('operations')
+            ->select('COUNT(id) AS nb_operations_total, SUM(commission) AS total_commission_global')
+            ->where('commission >', 0)
+            ->get()
+            ->getRowArray() ?: [
+                'nb_operations_total' => 0,
+                'total_commission_global' => 0,
+            ];
+    }
 }

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Operateur;
 
+use App\Controllers\BaseController;
 use App\Models\OperateurModel;
 
 class Operateur extends BaseController
@@ -16,7 +17,8 @@ class Operateur extends BaseController
     public function index()
     {
         return view('operateur/operateurs', [
-            'operateurs' => $this->operateurModel->listAll(),
+            'operateurs' => $this->operateurModel->listAllWithStats(),
+            'totalGlobal' => $this->operateurModel->getTotalGlobal(),
         ]);
     }
 
