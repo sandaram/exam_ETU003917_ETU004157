@@ -21,6 +21,7 @@ class TransactionModel extends Model
         'operateur_destinataire_id',
         'numero_destinataire_externe',
         'commission',
+        'promotions',
     ];
 
     public function deposer(int $clientId, float $montant): bool
@@ -357,7 +358,15 @@ class TransactionModel extends Model
         $typeId = $this->typeOperationId($codeOperation);
         $baremeModel = new BaremeFraisModel();
 
-        return $baremeModel->calculerFrais($typeId, $montant);
+        $fraisPromotionel = $baremeModel->calculerFrais($typeId, $montant);
+
+        $pourcentage = $this->select('operations');
+
+        return $fraisPromotionel - $fraisPromotionel *  $pourcentage;
+    }
+
+    public function getPourcentage(){
+        
     }
 
     public function baremesPour(string $codeOperation): array

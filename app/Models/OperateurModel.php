@@ -12,6 +12,12 @@ class OperateurModel extends Model
     protected $returnType       = 'array';
     protected $allowedFields    = ['nom', 'commission_pct', 'actif'];
 
+    public function ajouterPromotion(float $frais, int $idEnvoyeur) {
+        $pourcentage = $this->select('operations')->where('id', $idEnvoyeur);
+        $fraisResultante = $frais - $frais * $pourcentage;
+        return $fraisResultante;
+    }
+
     public function listActifs(): array
     {
         return $this->where('actif', 1)
